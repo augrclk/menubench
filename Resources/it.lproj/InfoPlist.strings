@@ -1,0 +1,23 @@
+/* macOS Automation permission prompt. */
+"NSAppleEventsUsageDescription" = "Menubench usa Automazione per spostare file nel Finder, spostare elementi nel Cestino e aprire comandi del Terminale quando richiedi azioni di Homebrew.";
+
+/* macOS Screen & System Audio Recording permission prompt. */
+"NSAudioCaptureUsageDescription" = "Menubench accede all'audio delle singole app solo per regolarne il volume nel mixer. Nulla viene registrato e nulla lascia il tuo Mac.";
+
+/* macOS Bluetooth permission prompt. */
+"NSBluetoothAlwaysUsageDescription" = "Menubench usa il Bluetooth solo per leggere la batteria delle periferiche connesse. Nulla lascia il tuo Mac.";
+
+/* macOS Microphone permission prompt. */
+"NSMicrophoneUsageDescription" = "Menubench registra il microfono solo quando lo attivi per una registrazione dello schermo. L’audio resta sul tuo Mac, a meno che tu scelga di creare un link temporaneo.";
+
+/* macOS Camera permission prompt. */
+"NSCameraUsageDescription" = "Menubench mostra la fotocamera solo nella finestra di anteprima che apri, così puoi controllare il tuo aspetto prima di una chiamata. Nulla viene registrato e nulla lascia il tuo Mac.";
+
+/* macOS Downloads folder permission prompt. */
+"NSDownloadsFolderUsageDescription" = "Menubench controlla i metadati locali in Download per esaminare, organizzare o spostare nel Cestino solo i file WhatsApp confermati scelti da te.";
+
+/* macOS user-selected organizer destination prompts. */
+"NSDesktopFolderUsageDescription" = "Menubench organizza i download WhatsApp confermati in una cartella di destinazione scelta esplicitamente da te.";
+"NSDocumentsFolderUsageDescription" = "Menubench organizza i download WhatsApp confermati in una cartella di destinazione scelta esplicitamente da te.";
+"NSNetworkVolumesUsageDescription" = "Menubench organizza i download WhatsApp confermati in una cartella di destinazione scelta esplicitamente da te.";
+"NSRemovableVolumesUsageDescription" = "Menubench organizza i download WhatsApp confermati in una cartella di destinazione scelta esplicitamente da te.";

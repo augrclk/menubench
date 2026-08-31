@@ -1,0 +1,23 @@
+/* macOS Automation permission prompt. */
+"NSAppleEventsUsageDescription" = "Menubench verwendet Automatisierung, um Dateien im Finder zu bewegen, Objekte in den Papierkorb zu legen und Terminal-Befehle zu öffnen, wenn du Homebrew-Aktionen anforderst.";
+
+/* macOS Screen & System Audio Recording permission prompt. */
+"NSAudioCaptureUsageDescription" = "Menubench greift nur auf den Ton einzelner Apps zu, um deren Lautstärke im Mixer anzupassen. Es wird nichts aufgezeichnet und nichts verlässt deinen Mac.";
+
+/* macOS Bluetooth permission prompt. */
+"NSBluetoothAlwaysUsageDescription" = "Menubench verwendet Bluetooth nur, um den Akkustand verbundener Peripheriegeräte zu lesen. Nichts verlässt deinen Mac.";
+
+/* macOS Microphone permission prompt. */
+"NSMicrophoneUsageDescription" = "Menubench nimmt dein Mikrofon nur auf, wenn du es für eine Bildschirmaufnahme einschaltest. Der Ton bleibt auf deinem Mac, außer du erstellst einen temporären Link.";
+
+/* macOS Camera permission prompt. */
+"NSCameraUsageDescription" = "Menubench zeigt deine Kamera nur im Vorschaufenster, das du öffnest, damit du vor einem Anruf prüfen kannst, wie du aussiehst. Es wird nichts aufgezeichnet und nichts verlässt deinen Mac.";
+
+/* macOS Downloads folder permission prompt. */
+"NSDownloadsFolderUsageDescription" = "Menubench prüft lokale Metadaten in Downloads, um nur ausgewählte bestätigte WhatsApp-Dateien zu prüfen, zu organisieren oder in den Papierkorb zu verschieben.";
+
+/* macOS user-selected organizer destination prompts. */
+"NSDesktopFolderUsageDescription" = "Menubench organisiert bestätigte WhatsApp-Downloads in einem Zielordner, den du ausdrücklich auswählst.";
+"NSDocumentsFolderUsageDescription" = "Menubench organisiert bestätigte WhatsApp-Downloads in einem Zielordner, den du ausdrücklich auswählst.";
+"NSNetworkVolumesUsageDescription" = "Menubench organisiert bestätigte WhatsApp-Downloads in einem Zielordner, den du ausdrücklich auswählst.";
+"NSRemovableVolumesUsageDescription" = "Menubench organisiert bestätigte WhatsApp-Downloads in einem Zielordner, den du ausdrücklich auswählst.";

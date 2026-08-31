@@ -1,0 +1,9 @@
+blank_issues_enabled: false
+
+contact_links:
+  - name: Troubleshooting guide
+    about: Check permissions, installation and common feature fixes first.
+    url: https://github.com/augrclk/menubench/blob/main/docs/TROUBLESHOOTING.md
+  - name: Private security report
+    about: Report a vulnerability without publishing it.
+    url: https://github.com/augrclk/menubench/security/advisories/new

@@ -1,0 +1,48 @@
+{
+  "fill-specializations" : [
+    {
+      "value" : "system-light"
+    },
+    {
+      "appearance" : "dark",
+      "value" : "automatic"
+    }
+  ],
+  "groups" : [
+    {
+      "blur-material" : 0,
+      "hidden" : false,
+      "layers" : [
+        {
+          "hidden" : false,
+          "image-name" : "menubench-app-icon.png",
+          "name" : "Menubench-Mark",
+          "position" : {
+            "scale" : 1,
+            "translation-in-points" : [0, 0]
+          }
+        }
+      ],
+      "name" : "Menubench",
+      "shadow-specializations" : [
+        {
+          "value" : {
+            "kind" : "neutral",
+            "opacity" : 1
+          }
+        }
+      ],
+      "translucency-specializations" : [
+        {
+          "value" : {
+            "enabled" : false,
+            "value" : 0
+          }
+        }
+      ]
+    }
+  ],
+  "supported-platforms" : {
+    "squares" : ["macOS"]
+  }
+}

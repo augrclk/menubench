@@ -1,0 +1,23 @@
+/* macOS Automation permission prompt. */
+"NSAppleEventsUsageDescription" = "Menubench; Finder'da dosya taşımak, öğeleri Çöp Sepeti'ne göndermek ve Homebrew işlemleri istediğinde Terminal komutları açmak için Otomasyon kullanır.";
+
+/* macOS Screen & System Audio Recording permission prompt. */
+"NSAudioCaptureUsageDescription" = "Menubench, mikserde her uygulamanın ses düzeyini ayarlamak için yalnızca tek tek uygulama seslerine dokunur. Hiçbir şey kaydedilmez veya Mac'inden çıkmaz.";
+
+/* macOS Bluetooth permission prompt. */
+"NSBluetoothAlwaysUsageDescription" = "Menubench, Bluetooth'u yalnızca bağlı çevre birimlerinin pil düzeyini okumak için kullanır. Hiçbir veri Mac'inden çıkmaz.";
+
+/* macOS Microphone permission prompt. */
+"NSMicrophoneUsageDescription" = "Menubench, mikrofonunuzu yalnızca ekran kaydı için açtığınızda kaydeder. Geçici bir bağlantı oluşturmadığınız sürece ses Mac'inizde kalır.";
+
+/* macOS Camera permission prompt. */
+"NSCameraUsageDescription" = "Menubench, kameranızı yalnızca açtığınız önizleme penceresinde gösterir; böylece aramadan önce nasıl göründüğünüzü kontrol edebilirsiniz. Hiçbir şey kaydedilmez veya Mac'inizden çıkmaz.";
+
+/* macOS Downloads folder permission prompt. */
+"NSDownloadsFolderUsageDescription" = "Menubench, yalnızca seçtiğiniz doğrulanmış WhatsApp dosyalarını incelemek, düzenlemek veya Çöp Sepeti'ne taşımak için İndirilenler'deki yerel meta verileri denetler.";
+
+/* macOS user-selected organizer destination prompts. */
+"NSDesktopFolderUsageDescription" = "Menubench, doğrulanmış WhatsApp indirmelerini açıkça seçtiğiniz bir hedef klasörde düzenler.";
+"NSDocumentsFolderUsageDescription" = "Menubench, doğrulanmış WhatsApp indirmelerini açıkça seçtiğiniz bir hedef klasörde düzenler.";
+"NSNetworkVolumesUsageDescription" = "Menubench, doğrulanmış WhatsApp indirmelerini açıkça seçtiğiniz bir hedef klasörde düzenler.";
+"NSRemovableVolumesUsageDescription" = "Menubench, doğrulanmış WhatsApp indirmelerini açıkça seçtiğiniz bir hedef klasörde düzenler.";

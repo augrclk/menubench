@@ -1,0 +1,47 @@
+name: Feature request
+description: Suggest a focused improvement for Menubench
+title: "[Idea] "
+labels: [enhancement]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Great features begin with a clear everyday problem. Existing macOS behavior, reference apps and small sketches are especially useful.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem would this solve?
+      placeholder: Describe the moment where Menubench could save time or friction.
+    validations:
+      required: true
+
+  - type: textarea
+    id: idea
+    attributes:
+      label: What would a good solution feel like?
+      placeholder: Explain the smallest useful behavior and where it belongs.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Link downloader and media
+        - System monitor and network test
+        - Windows and Dock
+        - Audio
+        - Clipboard and files
+        - Capture tools
+        - Menu bar and settings
+        - New area
+    validations:
+      required: true
+
+  - type: textarea
+    id: references
+    attributes:
+      label: References
+      description: Optional screenshots, apps or native macOS behavior that communicate the idea.

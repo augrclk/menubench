@@ -1,0 +1,78 @@
+name: Bug report
+description: Report a reproducible problem in Menubench
+title: "[Bug] "
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping improve Menubench. Please keep one problem per report and remove private information from logs or screenshots.
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before filing
+      options:
+        - label: I can reproduce this on the latest public release.
+          required: true
+        - label: I checked the relevant macOS permission in System Settings.
+          required: true
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: What happened?
+      description: Tell us what you expected and what happened instead.
+      placeholder: A short, concrete description of the problem.
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Open Menubench…
+        2. Choose…
+        3. Observe…
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Link downloader and media
+        - System monitor and network test
+        - Windows and Dock
+        - Audio
+        - Clipboard and files
+        - Capture tools
+        - Menu bar and settings
+        - Installation and updates
+        - Other
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: Menubench version
+      placeholder: "1.0.0"
+    validations:
+      required: true
+
+  - type: input
+    id: system
+    attributes:
+      label: Mac and macOS
+      placeholder: "MacBook Pro M3 Pro, macOS 26.0"
+    validations:
+      required: true
+
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Screenshots or logs
+      description: Optional. Remove names, file paths, URLs and other private data first.

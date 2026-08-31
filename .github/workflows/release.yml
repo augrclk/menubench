@@ -1,0 +1,210 @@
+name: Release
+
+on:
+  push:
+    tags: ["v[0-9]*"]
+
+permissions: {}
+
+concurrency:
+  group: menubench-release
+  cancel-in-progress: false
+
+jobs:
+  preflight:
+    name: Verify release source
+    runs-on: macos-26
+    timeout-minutes: 35
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Validate stable version tag
+        run: |
+          set -euo pipefail
+          if [[ ! "$GITHUB_REF_NAME" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "Release tags must use vMAJOR.MINOR.PATCH." >&2
+            exit 1
+          fi
+
+          git fetch --no-tags origin main
+          git merge-base --is-ancestor HEAD origin/main
+
+          VERSION="${GITHUB_REF_NAME#v}"
+          APP_VERSION="$(xcodebuild \
+            -project Menubench.xcodeproj \
+            -scheme Menubench \
+            -configuration Release \
+            -showBuildSettings \
+            | awk -F ' = ' '/ MARKETING_VERSION = / { print $2; exit }')"
+          if [[ "$VERSION" != "$APP_VERSION" ]]; then
+            echo "Tag $VERSION does not match MARKETING_VERSION $APP_VERSION." >&2
+            exit 1
+          fi
+          grep -Eq "^## \[$VERSION\] - [0-9]{4}-[0-9]{2}-[0-9]{2}$" CHANGELOG.md
+
+      - name: Unit tests
+        run: ./build.sh --test
+
+  package:
+    name: Build, sign and notarize
+    needs: preflight
+    runs-on: macos-26
+    timeout-minutes: 60
+    environment: release-signing
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Import Developer ID certificate
+        env:
+          REQUIRE_SIGNING: "1"
+          SIGNING_CERT_P12: ${{ secrets.SIGNING_CERT_P12 }}
+          SIGNING_CERT_PASSWORD: ${{ secrets.SIGNING_CERT_PASSWORD }}
+        run: ./Tools/ci-setup-signing.sh
+
+      - name: Build universal app
+        run: |
+          set -euo pipefail
+          xcodebuild \
+            -project Menubench.xcodeproj \
+            -scheme Menubench \
+            -configuration Release \
+            -derivedDataPath build/ReleaseDerived \
+            ARCHS="arm64 x86_64" \
+            ONLY_ACTIVE_ARCH=NO \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            clean build
+
+          mkdir -p build/stage
+          ditto \
+            build/ReleaseDerived/Build/Products/Release/Menubench.app \
+            build/stage/Menubench.app
+          ./Tools/sign-release.sh build/stage/Menubench.app
+
+          ARCHS_BUILT="$(lipo -archs build/stage/Menubench.app/Contents/MacOS/Menubench)"
+          [[ "$ARCHS_BUILT" == *arm64* && "$ARCHS_BUILT" == *x86_64* ]]
+          build/stage/Menubench.app/Contents/MacOS/Menubench --selftest
+
+      - name: Notarize app
+        env:
+          REQUIRE_NOTARIZATION: "1"
+          NOTARY_API_KEY_P8: ${{ secrets.NOTARY_API_KEY_P8 }}
+          NOTARY_KEY_ID: ${{ secrets.NOTARY_KEY_ID }}
+          NOTARY_ISSUER_ID: ${{ secrets.NOTARY_ISSUER_ID }}
+        run: ./Tools/notarize.sh build/stage/Menubench.app
+
+      - name: Create and sign DMG
+        run: |
+          set -euo pipefail
+          ./Tools/make-dmg.sh
+          DMG="$(find dist -maxdepth 1 -name 'Menubench-*.dmg' -print -quit)"
+          IDENTITY="$(security find-identity -v -p codesigning 2>/dev/null \
+            | sed -n 's/.*"\(Developer ID Application:.*\)"/\1/p' \
+            | head -n 1)"
+          test -n "$IDENTITY"
+          codesign --force --timestamp --sign "$IDENTITY" "$DMG"
+          codesign --verify --strict --verbose=2 "$DMG"
+
+      - name: Notarize DMG
+        env:
+          REQUIRE_NOTARIZATION: "1"
+          NOTARY_API_KEY_P8: ${{ secrets.NOTARY_API_KEY_P8 }}
+          NOTARY_KEY_ID: ${{ secrets.NOTARY_KEY_ID }}
+          NOTARY_ISSUER_ID: ${{ secrets.NOTARY_ISSUER_ID }}
+        run: |
+          DMG="$(find dist -maxdepth 1 -name 'Menubench-*.dmg' -print -quit)"
+          ./Tools/notarize.sh "$DMG"
+
+      - name: Verify distributable
+        run: |
+          set -euo pipefail
+          DMG="$(find dist -maxdepth 1 -name 'Menubench-*.dmg' -print -quit)"
+          xcrun stapler validate "$DMG"
+
+          MOUNT="$(mktemp -d)"
+          cleanup() {
+            hdiutil detach "$MOUNT" >/dev/null 2>&1 || true
+            rmdir "$MOUNT" >/dev/null 2>&1 || true
+          }
+          trap cleanup EXIT
+          hdiutil attach -nobrowse -readonly -mountpoint "$MOUNT" "$DMG"
+          spctl -a -t exec -vv "$MOUNT/Menubench.app"
+          codesign --verify --deep --strict --verbose=2 "$MOUNT/Menubench.app"
+          xcrun stapler validate "$MOUNT/Menubench.app"
+          ARCHS_BUILT="$(lipo -archs "$MOUNT/Menubench.app/Contents/MacOS/Menubench")"
+          [[ "$ARCHS_BUILT" == *arm64* && "$ARCHS_BUILT" == *x86_64* ]]
+
+      - name: Prepare release bundle
+        run: |
+          set -euo pipefail
+          VERSION="${GITHUB_REF_NAME#v}"
+          NOTES_FILE="$RUNNER_TEMP/release-notes.md"
+          awk -v header="## [$VERSION]" \
+            'index($0, header) == 1 { found=1; next } /^## \[/ && found { exit } found { print }' \
+            CHANGELOG.md > "$NOTES_FILE"
+          test -s "$NOTES_FILE"
+          printf '\nSigned with an Apple Developer ID and notarized by Apple. Requires macOS 14 or newer.\n' \
+            >> "$NOTES_FILE"
+
+          BUNDLE="$RUNNER_TEMP/release-bundle"
+          mkdir -p "$BUNDLE"
+          DMG="$(find dist -maxdepth 1 -name 'Menubench-*.dmg' -print -quit)"
+          cp "$DMG" "$BUNDLE/"
+          cp "$DMG" "$BUNDLE/Menubench.dmg"
+          cp "$NOTES_FILE" "$BUNDLE/release-notes.md"
+          (
+            cd "$BUNDLE"
+            shasum -a 256 ./*.dmg > SHA256SUMS
+          )
+
+      - name: Upload verified artifact
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: release-${{ github.ref_name }}
+          path: ${{ runner.temp }}/release-bundle
+          if-no-files-found: error
+          retention-days: 1
+          compression-level: 0
+
+  publish:
+    name: Publish GitHub Release
+    needs: package
+    runs-on: macos-26
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
+        with:
+          name: release-${{ github.ref_name }}
+          path: release-bundle
+
+      - name: Verify artifact checksum
+        run: |
+          cd release-bundle
+          shasum -a 256 -c SHA256SUMS
+
+      - name: Publish stable release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          VERSION="${GITHUB_REF_NAME#v}"
+          gh release create "$GITHUB_REF_NAME" \
+            release-bundle/Menubench.dmg \
+            release-bundle/Menubench-"$VERSION".dmg \
+            release-bundle/SHA256SUMS \
+            --verify-tag \
+            --title "Menubench $VERSION" \
+            --notes-file release-bundle/release-notes.md \
+            --latest

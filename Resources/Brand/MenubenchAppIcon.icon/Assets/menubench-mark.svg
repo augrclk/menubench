@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Exact reference wrapper for the user-selected Menubench master artwork.
+  The active icon catalog reads menubench-app-icon.png directly; keeping this
+  wrapper faithful prevents an unused legacy SVG from becoming a second logo.
+-->
+<svg xmlns="http://www.w3.org/2000/svg"
+     xmlns:xlink="http://www.w3.org/1999/xlink"
+     width="1024" height="1024" viewBox="0 0 1024 1024">
+  <title>Menubench app icon — selected master artwork</title>
+  <image width="1024" height="1024"
+         preserveAspectRatio="xMidYMid meet"
+         href="menubench-app-icon.png"
+         xlink:href="menubench-app-icon.png"/>
+</svg>

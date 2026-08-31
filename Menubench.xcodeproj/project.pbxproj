@@ -1,0 +1,446 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 71;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		A10000000000000000000001 /* com.celikugurdev.menubench.fan-control in Embed Helper */ = {isa = PBXBuildFile; fileRef = A20000000000000000000002 /* com.celikugurdev.menubench.fan-control */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		A10000000000000000000002 /* Sources/FanControlHelper/main.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000010 /* Sources/FanControlHelper/main.swift */; };
+		A10000000000000000000003 /* Sources/Menubench/Services/FanControl/FanControlSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000011 /* Sources/Menubench/Services/FanControl/FanControlSupport.swift */; };
+		A10000000000000000000004 /* Sources/Menubench/Services/FanControl/FanControlXPC.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000012 /* Sources/Menubench/Services/FanControl/FanControlXPC.swift */; };
+		A10000000000000000000005 /* Sources/Menubench/Services/SystemMonitor/SMCClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000013 /* Sources/Menubench/Services/SystemMonitor/SMCClient.swift */; };
+		A10000000000000000000006 /* Sources/Menubench/Services/Metrics/TemperatureSensorSelector.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000014 /* Sources/Menubench/Services/Metrics/TemperatureSensorSelector.swift */; };
+		A10000000000000000000007 /* Sources/Menubench/Services/FanControl/FanControlHardware.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000015 /* Sources/Menubench/Services/FanControl/FanControlHardware.swift */; };
+		A10000000000000000000008 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000023 /* Assets.xcassets */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		A30000000000000000000001 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = A40000000000000000000001 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = A50000000000000000000002;
+			remoteInfo = "Menubench Fan Control";
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		A60000000000000000000003 /* Embed Helper */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = Contents/Library/LaunchServices;
+			dstSubfolderSpec = 1;
+			files = (
+				A10000000000000000000001 /* com.celikugurdev.menubench.fan-control in Embed Helper */,
+			);
+			name = "Embed Helper";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		A20000000000000000000001 /* Menubench.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Menubench.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		A20000000000000000000002 /* com.celikugurdev.menubench.fan-control */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "com.celikugurdev.menubench.fan-control"; sourceTree = BUILT_PRODUCTS_DIR; };
+		A20000000000000000000010 /* Sources/FanControlHelper/main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = main.swift; path = Sources/FanControlHelper/main.swift; sourceTree = SOURCE_ROOT; };
+		A20000000000000000000011 /* Sources/Menubench/Services/FanControl/FanControlSupport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = FanControlSupport.swift; path = Sources/Menubench/Services/FanControl/FanControlSupport.swift; sourceTree = SOURCE_ROOT; };
+		A20000000000000000000012 /* Sources/Menubench/Services/FanControl/FanControlXPC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = FanControlXPC.swift; path = Sources/Menubench/Services/FanControl/FanControlXPC.swift; sourceTree = SOURCE_ROOT; };
+		A20000000000000000000013 /* Sources/Menubench/Services/SystemMonitor/SMCClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SMCClient.swift; path = Sources/Menubench/Services/SystemMonitor/SMCClient.swift; sourceTree = SOURCE_ROOT; };
+		A20000000000000000000014 /* Sources/Menubench/Services/Metrics/TemperatureSensorSelector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = TemperatureSensorSelector.swift; path = Sources/Menubench/Services/Metrics/TemperatureSensorSelector.swift; sourceTree = SOURCE_ROOT; };
+		A20000000000000000000015 /* Sources/Menubench/Services/FanControl/FanControlHardware.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = FanControlHardware.swift; path = Sources/Menubench/Services/FanControl/FanControlHardware.swift; sourceTree = SOURCE_ROOT; };
+		A20000000000000000000020 /* Resources/Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Resources/Info.plist; sourceTree = SOURCE_ROOT; };
+		A20000000000000000000021 /* Resources/Menubench.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Resources/Menubench.entitlements; sourceTree = SOURCE_ROOT; };
+		A20000000000000000000022 /* Tools/XcodeAssembleResources.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = Tools/XcodeAssembleResources.sh; sourceTree = SOURCE_ROOT; };
+		A20000000000000000000023 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Resources/Assets.xcassets; sourceTree = SOURCE_ROOT; };
+/* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		A70000000000000000000001 /* Menubench Sources */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); name = "Menubench Sources"; path = Sources/Menubench; sourceTree = SOURCE_ROOT; };
+/* End PBXFileSystemSynchronizedRootGroup section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		A60000000000000000000002 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A60000000000000000000012 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		A70000000000000000000000 = {
+			isa = PBXGroup;
+			children = (
+				A70000000000000000000001 /* Menubench Sources */,
+				A70000000000000000000002 /* Fan Helper Sources */,
+				A70000000000000000000003 /* Configuration */,
+				A70000000000000000000004 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		A70000000000000000000002 /* Fan Helper Sources */ = {
+			isa = PBXGroup;
+			children = (
+				A20000000000000000000010 /* Sources/FanControlHelper/main.swift */,
+				A20000000000000000000011 /* Sources/Menubench/Services/FanControl/FanControlSupport.swift */,
+				A20000000000000000000012 /* Sources/Menubench/Services/FanControl/FanControlXPC.swift */,
+				A20000000000000000000013 /* Sources/Menubench/Services/SystemMonitor/SMCClient.swift */,
+				A20000000000000000000014 /* Sources/Menubench/Services/Metrics/TemperatureSensorSelector.swift */,
+				A20000000000000000000015 /* Sources/Menubench/Services/FanControl/FanControlHardware.swift */,
+			);
+			name = "Fan Helper Sources";
+			sourceTree = "<group>";
+		};
+		A70000000000000000000003 /* Configuration */ = {
+			isa = PBXGroup;
+			children = (
+				A20000000000000000000020 /* Resources/Info.plist */,
+				A20000000000000000000021 /* Resources/Menubench.entitlements */,
+				A20000000000000000000023 /* Assets.xcassets */,
+				A20000000000000000000022 /* Tools/XcodeAssembleResources.sh */,
+			);
+			name = Configuration;
+			sourceTree = "<group>";
+		};
+		A70000000000000000000004 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				A20000000000000000000001 /* Menubench.app */,
+				A20000000000000000000002 /* com.celikugurdev.menubench.fan-control */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		A50000000000000000000001 /* Menubench */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A80000000000000000000002 /* Build configuration list for PBXNativeTarget "Menubench" */;
+			buildPhases = (
+				A60000000000000000000001 /* Sources */,
+				A60000000000000000000002 /* Frameworks */,
+				A60000000000000000000005 /* Resources */,
+				A60000000000000000000003 /* Embed Helper */,
+				A60000000000000000000004 /* Assemble Menubench Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				A90000000000000000000001 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				A70000000000000000000001 /* Menubench Sources */,
+			);
+			name = Menubench;
+			packageProductDependencies = (
+			);
+			productName = Menubench;
+			productReference = A20000000000000000000001 /* Menubench.app */;
+			productType = "com.apple.product-type.application";
+		};
+		A50000000000000000000002 /* Menubench Fan Control */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A80000000000000000000003 /* Build configuration list for PBXNativeTarget "com.celikugurdev.menubench.fan-control" */;
+			buildPhases = (
+				A60000000000000000000011 /* Sources */,
+				A60000000000000000000012 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "Menubench Fan Control";
+			packageProductDependencies = (
+			);
+			productName = "com.celikugurdev.menubench.fan-control";
+			productReference = A20000000000000000000002 /* com.celikugurdev.menubench.fan-control */;
+			productType = "com.apple.product-type.tool";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		A40000000000000000000001 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 2660;
+				LastUpgradeCheck = 2660;
+				TargetAttributes = {
+					A50000000000000000000001 = {
+						CreatedOnToolsVersion = 26.6;
+					};
+					A50000000000000000000002 = {
+						CreatedOnToolsVersion = 26.6;
+					};
+				};
+			};
+			buildConfigurationList = A80000000000000000000001 /* Build configuration list for PBXProject "Menubench" */;
+			compatibilityVersion = "Xcode 16.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+				tr,
+				"pt-BR",
+				es,
+				de,
+				fr,
+				it,
+				ja,
+				ko,
+				"zh-Hans",
+				ru,
+				"zh-TW",
+				"zh-HK",
+			);
+			mainGroup = A70000000000000000000000;
+			productRefGroup = A70000000000000000000004 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				A50000000000000000000001 /* Menubench */,
+				A50000000000000000000002 /* com.celikugurdev.menubench.fan-control */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		A60000000000000000000005 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A10000000000000000000008 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		A60000000000000000000004 /* Assemble Menubench Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Assemble Menubench Resources";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/zsh;
+			shellScript = "/bin/zsh \"$SRCROOT/Tools/XcodeAssembleResources.sh\"\n";
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		A60000000000000000000001 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A60000000000000000000011 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A10000000000000000000002 /* Sources/FanControlHelper/main.swift in Sources */,
+				A10000000000000000000003 /* Sources/Menubench/Services/FanControl/FanControlSupport.swift in Sources */,
+				A10000000000000000000004 /* Sources/Menubench/Services/FanControl/FanControlXPC.swift in Sources */,
+				A10000000000000000000005 /* Sources/Menubench/Services/SystemMonitor/SMCClient.swift in Sources */,
+				A10000000000000000000006 /* Sources/Menubench/Services/Metrics/TemperatureSensorSelector.swift in Sources */,
+				A10000000000000000000007 /* Sources/Menubench/Services/FanControl/FanControlHardware.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		A90000000000000000000001 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = A50000000000000000000002 /* com.celikugurdev.menubench.fan-control */;
+			targetProxy = A30000000000000000000001 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		B10000000000000000000001 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_TESTABILITY = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		B10000000000000000000002 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
+				COPY_PHASE_STRIP = YES;
+				DEAD_CODE_STRIPPING = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				ONLY_ACTIVE_ARCH = NO;
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		B10000000000000000000011 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
+				CODE_SIGN_ENTITLEMENTS = Resources/Menubench.entitlements;
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 63LRF2GW5Z;
+				ENABLE_APP_SANDBOX = NO;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = Resources/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Menubench;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.celikugurdev.menubench;
+				PRODUCT_MODULE_NAME = Menubench;
+				PRODUCT_NAME = Menubench;
+				SUPPORTED_PLATFORMS = macosx;
+				SWIFT_INCLUDE_PATHS = "$(SRCROOT)/Sources/VMStatisticsCompat";
+			};
+			name = Debug;
+		};
+		B10000000000000000000012 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
+				CODE_SIGN_ENTITLEMENTS = Resources/Menubench.entitlements;
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Developer ID Application";
+				CODE_SIGN_STYLE = Manual;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 63LRF2GW5Z;
+				ENABLE_APP_SANDBOX = NO;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = Resources/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Menubench;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.celikugurdev.menubench;
+				PRODUCT_MODULE_NAME = Menubench;
+				PRODUCT_NAME = Menubench;
+				SUPPORTED_PLATFORMS = macosx;
+				SWIFT_INCLUDE_PATHS = "$(SRCROOT)/Sources/VMStatisticsCompat";
+			};
+			name = Release;
+		};
+		B10000000000000000000021 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 63LRF2GW5Z;
+				ENABLE_APP_SANDBOX = NO;
+				ENABLE_HARDENED_RUNTIME = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.celikugurdev.menubench.fan-control";
+				PRODUCT_NAME = "com.celikugurdev.menubench.fan-control";
+				SUPPORTED_PLATFORMS = macosx;
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		B10000000000000000000022 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Developer ID Application";
+				CODE_SIGN_STYLE = Manual;
+				DEVELOPMENT_TEAM = 63LRF2GW5Z;
+				ENABLE_APP_SANDBOX = NO;
+				ENABLE_HARDENED_RUNTIME = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.celikugurdev.menubench.fan-control";
+				PRODUCT_NAME = "com.celikugurdev.menubench.fan-control";
+				SUPPORTED_PLATFORMS = macosx;
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		A80000000000000000000001 /* Build configuration list for PBXProject "Menubench" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B10000000000000000000001 /* Debug */,
+				B10000000000000000000002 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		A80000000000000000000002 /* Build configuration list for PBXNativeTarget "Menubench" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B10000000000000000000011 /* Debug */,
+				B10000000000000000000012 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		A80000000000000000000003 /* Build configuration list for PBXNativeTarget "com.celikugurdev.menubench.fan-control" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B10000000000000000000021 /* Debug */,
+				B10000000000000000000022 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = A40000000000000000000001 /* Project object */;
+}

@@ -1,0 +1,23 @@
+/* macOS Automation permission prompt. */
+"NSAppleEventsUsageDescription" = "Menubench usa Automatización para mover archivos en el Finder, enviar elementos a la Papelera y abrir comandos de Terminal cuando pides acciones de Homebrew.";
+
+/* macOS Screen & System Audio Recording permission prompt. */
+"NSAudioCaptureUsageDescription" = "Menubench accede al audio de cada app solo para ajustar su volumen individual en el mezclador. No se graba nada ni nada sale de tu Mac.";
+
+/* macOS Bluetooth permission prompt. */
+"NSBluetoothAlwaysUsageDescription" = "Menubench usa Bluetooth solo para leer la batería de los periféricos conectados. Nada sale de tu Mac.";
+
+/* macOS Microphone permission prompt. */
+"NSMicrophoneUsageDescription" = "Menubench graba tu micrófono solo cuando lo activas para una grabación de pantalla. El audio se queda en tu Mac salvo que elijas crear un enlace temporal.";
+
+/* macOS Camera permission prompt. */
+"NSCameraUsageDescription" = "Menubench muestra tu cámara solo en la ventana de vista previa que abres, para que compruebes cómo te ves antes de una llamada. No se graba nada ni nada sale de tu Mac.";
+
+/* macOS Downloads folder permission prompt. */
+"NSDownloadsFolderUsageDescription" = "Menubench consulta metadatos locales en Descargas para revisar, organizar o enviar a la Papelera solo los archivos confirmados de WhatsApp que tú elijas.";
+
+/* macOS user-selected organizer destination prompts. */
+"NSDesktopFolderUsageDescription" = "Menubench organiza las descargas confirmadas de WhatsApp en una carpeta de destino que tú eliges expresamente.";
+"NSDocumentsFolderUsageDescription" = "Menubench organiza las descargas confirmadas de WhatsApp en una carpeta de destino que tú eliges expresamente.";
+"NSNetworkVolumesUsageDescription" = "Menubench organiza las descargas confirmadas de WhatsApp en una carpeta de destino que tú eliges expresamente.";
+"NSRemovableVolumesUsageDescription" = "Menubench organiza las descargas confirmadas de WhatsApp en una carpeta de destino que tú eliges expresamente.";
