@@ -1,19 +1,36 @@
 <!-- Hallmark · modern-minimal · soft technical premium · cream/graphite/terracotta · macrostructure: Workbench · enrichment: real Menubench product captures · pre-emit critique: P5 H5 E5 S5 R5 V5 · slop: pass -->
 
-<img src="docs/assets/readme/menubench-icon.png" width="152" alt="Menubench app icon">
+<p align="center">
+  <img src="docs/assets/readme/menubench-icon.png" width="168" alt="Menubench app icon">
+</p>
 
-# Menubench
+<h1 align="center">Menubench</h1>
 
-**One menu bar icon. The tools you actually use.**<br>
-Tek menü çubuğu simgesi. Gerçekten kullandığınız araçlar.
+<p align="center">
+  <strong>One menu bar icon. The tools you actually use.</strong><br>
+  Tek menü çubuğu simgesi. Gerçekten kullandığınız araçlar.
+</p>
 
-System readings, media downloads, window controls and everyday Mac utilities—local first.<br>
-Sistem ölçümleri, medya indirme, pencere yönetimi ve günlük Mac araçları—öncelikle yerel.
+<p align="center">
+  System readings, media downloads, window controls and everyday Mac utilities—local first.<br>
+  Sistem ölçümleri, medya indirme, pencere yönetimi ve günlük Mac araçları—öncelikle yerel.
+</p>
 
-[**Download .dmg**](https://github.com/augrclk/menubench/releases/latest/download/Menubench.dmg) · [Homebrew](#homebrew) · [Privacy](docs/PRIVACY.md)<br>
-[English](#english) · [Türkçe](#turkce)
+<p align="center">
+  <a href="https://github.com/augrclk/menubench/releases/latest/download/Menubench.dmg"><strong>Download .dmg</strong></a>
+  &nbsp;·&nbsp;
+  <a href="#homebrew">Homebrew</a>
+  &nbsp;·&nbsp;
+  <a href="docs/PRIVACY.md">Privacy</a>
+</p>
 
-<sub>macOS 14 Sonoma or newer · Apple silicon and Intel · GPL-3.0-or-later</sub>
+<p align="center">
+  <a href="#english">English</a>
+  &nbsp;·&nbsp;
+  <a href="#turkce">Türkçe</a>
+</p>
+
+<p align="center"><sub>macOS 14 Sonoma or newer · Apple silicon and Intel · GPL-3.0-or-later</sub></p>
 
 <br>
 
