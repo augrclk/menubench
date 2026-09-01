@@ -55,7 +55,6 @@ jobs:
     needs: preflight
     runs-on: macos-26
     timeout-minutes: 60
-    environment: release-signing
     permissions:
       contents: read
     steps:

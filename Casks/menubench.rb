@@ -5,7 +5,7 @@ cask "menubench" do
   url "https://github.com/augrclk/menubench/releases/download/v#{version}/Menubench-#{version}.dmg",
       verified: "github.com/augrclk/menubench/"
   name "Menubench"
-  desc "Local-first menu bar workbench for everyday Mac tasks"
+  desc "Local-first menu bar workbench for everyday tasks"
   homepage "https://github.com/augrclk/menubench"
 
   depends_on formula: ["deno", "ffmpeg", "yt-dlp"]

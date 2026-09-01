@@ -1,31 +1,25 @@
-<!-- Hallmark · modern-minimal · soft technical premium · cream/graphite/terracotta · macrostructure: Workbench · enrichment: real Menubench product captures · pre-emit critique: P5 H5 E5 S5 R5 V5 · slop: pass -->
-
 <p align="center">
-  <img src="docs/assets/readme/menubench-icon.png" width="168" alt="Menubench app icon">
+  <img src="docs/assets/readme/menubench-icon.png" width="156" alt="Menubench app icon">
 </p>
 
 <h1 align="center">Menubench</h1>
 
 <p align="center">
-  <strong>One menu bar icon. The tools you actually use.</strong><br>
-  Tek menü çubuğu simgesi. Gerçekten kullandığınız araçlar.
+  <strong>A calm, local-first workbench for macOS.</strong><br>
+  Günlük Mac araçları, tek ve sade bir menü çubuğu uygulamasında.
 </p>
 
 <p align="center">
-  System readings, media downloads, window controls and everyday Mac utilities—local first.<br>
-  Sistem ölçümleri, medya indirme, pencere yönetimi ve günlük Mac araçları—öncelikle yerel.
+  System readings, media downloads, window controls, audio tools and more—ready when you need them.<br>
+  Sistem ölçümleri, medya indirme, pencere yönetimi, ses araçları ve daha fazlası—ihtiyacınız olduğunda hazır.
 </p>
 
 <p align="center">
-  <a href="https://github.com/augrclk/menubench/releases/latest/download/Menubench.dmg"><strong>Download .dmg</strong></a>
+  <a href="https://github.com/augrclk/menubench/releases/latest/download/Menubench.dmg"><strong>Download Menubench</strong></a>
   &nbsp;·&nbsp;
   <a href="#homebrew">Homebrew</a>
   &nbsp;·&nbsp;
   <a href="docs/PRIVACY.md">Privacy</a>
-</p>
-
-<p align="center">
-  <a href="#english">English</a>
   &nbsp;·&nbsp;
   <a href="#turkce">Türkçe</a>
 </p>
@@ -35,37 +29,70 @@
 <br>
 
 <p align="center">
-  <img src="docs/assets/readme/menubench-panel.png" width="382" alt="Menubench menu bar panel showing keep-awake controls">
+  <a href="docs/assets/readme/menubench-keep-awake.png">
+    <img src="docs/assets/readme/menubench-keep-awake.png" width="520" alt="Menubench keep-awake controls in the macOS menu bar">
+  </a>
 </p>
 
 ## Product tour · Ürün turu
 
 ### From a link to a local file · Bağlantıdan yerel dosyaya
 
-Paste a supported link, choose MP4, MOV, MP3 or WAV, set the quality and save it directly to your Mac. Bağlantıyı yapıştırın; biçimi ve kaliteyi seçin; dosyayı doğrudan Mac’inize kaydedin.
+Paste a supported link, choose MP4, MOV, MP3 or WAV, select the quality and save it directly to your Mac. Processing runs locally with `yt-dlp` and FFmpeg.
+
+Desteklenen bağlantıyı yapıştırın; MP4, MOV, MP3 veya WAV biçimini ve kaliteyi seçin; dosyayı doğrudan Mac’inize kaydedin. İşlem `yt-dlp` ve FFmpeg ile yerel olarak çalışır.
 
 <p align="center">
-  <img src="docs/assets/readme/menubench-downloader.png" width="790" alt="Menubench downloader with MP4, MOV, MP3, WAV and 1080p quality controls">
+  <a href="docs/assets/readme/menubench-media-download.png">
+    <img src="docs/assets/readme/menubench-media-download.png" width="900" alt="Menubench media downloader with MP4, MOV, MP3, WAV and quality controls">
+  </a>
 </p>
 
-### Live readings you can verify · Doğrulayabileceğiniz canlı ölçümler
+### Your Mac at a glance · Mac’iniz tek bakışta
 
-CPU, GPU, memory, battery, temperatures and network traffic come from macOS system data. The network test performs real transfers instead of presenting a decorative estimate.
+See current CPU and GPU activity, memory pressure, battery state and available temperature readings. Adjust app volume or audio output without leaving the menu bar.
 
-CPU, GPU, bellek, pil, sıcaklık ve ağ verileri macOS sistem kaynaklarından alınır. Hız testi görsel bir tahmin göstermek yerine gerçek veri aktarımı gerçekleştirir.
+CPU ve GPU kullanımını, bellek basıncını, pil durumunu ve mevcut sıcaklık verilerini görün. Uygulama sesini veya çıkışını menü çubuğundan ayarlayın.
 
-<p align="center">
-  <img src="docs/assets/readme/menubench-monitor.png" width="300" alt="Menubench live CPU, GPU, memory, battery and temperature monitor">
-  <img src="docs/assets/readme/menubench-network.png" width="300" alt="Menubench live network graph and transfer-based speed test">
-</p>
+<table>
+  <tr>
+    <td width="50%" align="center" valign="top">
+      <a href="docs/assets/readme/menubench-system.png">
+        <img src="docs/assets/readme/menubench-system.png" width="390" alt="Menubench system panel with CPU, GPU, memory, battery and temperature readings">
+      </a>
+    </td>
+    <td width="50%" align="center" valign="top">
+      <a href="docs/assets/readme/menubench-audio-mixer.png">
+        <img src="docs/assets/readme/menubench-audio-mixer.png" width="398" alt="Menubench per-app audio mixer">
+      </a>
+    </td>
+  </tr>
+</table>
 
-### Every tool is included · Tüm araçlar uygulamaya dahildir
+### One app, only the tools you choose · Tek uygulama, yalnızca seçtiğiniz araçlar
 
-The feature screen controls what appears and runs; it is not an installer. Disabling a module removes it from the interface and stops its background work. Özellik ekranı bir yükleyici değildir; yalnızca hangi araçların görünür ve etkin olacağını belirler.
+Every module ships with Menubench. **Enable** does not download anything; it only makes that tool visible and allows it to run. Disable a tool to remove it from the interface and stop its background work.
 
-<p align="center">
-  <img src="docs/assets/readme/menubench-features.png" width="790" alt="Menubench feature screen with optional clipboard, audio, file and energy tools">
-</p>
+Tüm modüller Menubench ile birlikte gelir. **Etkinleştir** düğmesi hiçbir şey indirmez; yalnızca ilgili aracı görünür ve çalışır hâle getirir. Devre dışı bıraktığınız araç arayüzden kaldırılır ve arka plan çalışması durur.
+
+<table>
+  <tr>
+    <td width="50%" align="center" valign="top">
+      <a href="docs/assets/readme/menubench-feature-library.png">
+        <img src="docs/assets/readme/menubench-feature-library.png" width="790" alt="Menubench feature library with file, audio and energy tools">
+      </a>
+    </td>
+    <td width="50%" align="center" valign="top">
+      <a href="docs/assets/readme/menubench-window-tools.png">
+        <img src="docs/assets/readme/menubench-window-tools.png" width="790" alt="Menubench window, Dock, mouse and keyboard tools">
+      </a>
+    </td>
+  </tr>
+</table>
+
+> The screenshots above are the original, full-resolution product captures. Click any image to open it at its native resolution.
+>
+> Yukarıdaki görseller, ürünün orijinal tam çözünürlüklü ekran görüntüleridir. Doğal çözünürlükte açmak için görsele tıklayın.
 
 ---
 
@@ -73,12 +100,12 @@ The feature screen controls what appears and runs; it is not an installer. Disab
 
 ## English
 
-Menubench keeps frequently used controls behind one menu bar icon. Start with a quiet system readout and a keep-awake switch; enable more tools only when they earn their place. Every module ships with the app—the feature screen controls what is active, not what is installed.
+Menubench keeps frequently used Mac controls behind one menu bar icon. Start with a quiet system panel and keep-awake switch, then enable only the modules that earn their place.
 
 | Area | Included tools |
 |---|---|
-| **Monitor** | Real CPU, GPU, memory, disk, network, battery, temperature and fan readings; history graphs; transfer-based network quality testing. |
-| **Windows** | Snapping, visual app switching, Dock previews, focus helpers and configurable shortcuts. |
+| **Monitor** | CPU, GPU, memory, disk, network traffic, battery, available temperature and fan readings, plus history graphs. |
+| **Windows** | Window layouts, a visual app switcher, Dock previews, focus helpers and configurable shortcuts. |
 | **Media** | Link downloads, local video conversion, GIF creation, image tools, OCR, screenshots and screen recording. |
 | **Audio** | Per-app volume, output routing, device switching, input pinning and global microphone mute. |
 | **Files** | Clipboard history, snippets, a temporary shelf, Finder cut-and-paste, DMG installation and app cleanup. |
@@ -86,7 +113,7 @@ Menubench keeps frequently used controls behind one menu bar icon. Start with a 
 
 ### Link downloads, built in
 
-The downloader accepts YouTube and other `yt-dlp`-supported links. `yt-dlp`, FFmpeg and Deno run locally, and the URL is passed as a direct process argument rather than through a shell. Use it only for media you own or have permission to save.
+The downloader accepts YouTube and other `yt-dlp`-supported links. `yt-dlp`, FFmpeg and Deno run locally, and the URL is passed as a direct process argument rather than through a shell. Download only media you own or have permission to save.
 
 ### Install
 
@@ -96,7 +123,7 @@ Download [Menubench.dmg](https://github.com/augrclk/menubench/releases/latest/do
 
 #### Homebrew
 
-This repository is also a Homebrew tap. The Cask installs Menubench together with the downloader dependencies.
+This repository is also a Homebrew tap. Its Cask installs Menubench together with the downloader dependencies.
 
 ```sh
 brew tap augrclk/menubench https://github.com/augrclk/menubench
@@ -112,9 +139,9 @@ brew uninstall --cask menubench
 
 ### Private by default
 
-Menubench has no account, advertising, analytics or telemetry. Most tools stay entirely on your Mac. Network access occurs only when the chosen action requires it—for example a download, speed test, Homebrew action or update check.
+Menubench has no account, advertising, analytics or telemetry. Most tools stay entirely on your Mac. Network access occurs only when an action you choose requires it—for example a media download, Homebrew action or update check.
 
-Permissions are requested per feature and remain optional. See [Privacy](docs/PRIVACY.md) and [Permissions](docs/PERMISSIONS.md) for the complete behavior.
+Permissions are requested per feature and remain optional. See [Privacy](docs/PRIVACY.md) and [Permissions](docs/PERMISSIONS.md) for complete details.
 
 ### Build with Xcode
 
@@ -137,12 +164,12 @@ Signing, notarization and DMG publishing are documented in [DISTRIBUTION.md](DIS
 
 ## Türkçe
 
-Menubench, sık kullandığınız Mac araçlarını tek bir menü çubuğu simgesinde toplar. Sade sistem ölçümleri ve uyanık tutma aracıyla başlayabilir; yalnızca işinize yarayan modülleri etkinleştirebilirsiniz. Tüm özellikler uygulamayla birlikte gelir—**Etkinleştir** düğmesi bir şey indirmez, yalnızca ilgili aracı görünür ve çalışır hâle getirir.
+Menubench, sık kullandığınız Mac araçlarını tek bir menü çubuğu simgesinde toplar. Sade sistem paneli ve uyanık tutma aracıyla başlayabilir; yalnızca işinize yarayan modülleri etkinleştirebilirsiniz.
 
 | Alan | Dahil olan araçlar |
 |---|---|
-| **Monitör** | Gerçek CPU, GPU, bellek, disk, ağ, pil, sıcaklık ve fan verileri; geçmiş grafikleri; gerçek aktarıma dayalı ağ kalite testi. |
-| **Pencereler** | Pencere hizalama, görsel uygulama değiştirici, Dock önizlemeleri, odak yardımcıları ve ayarlanabilir kısayollar. |
+| **Monitör** | CPU, GPU, bellek, disk, ağ trafiği, pil, mevcut sıcaklık ve fan verileri ile geçmiş grafikleri. |
+| **Pencereler** | Pencere yerleşimleri, görsel uygulama değiştirici, Dock önizlemeleri, odak yardımcıları ve ayarlanabilir kısayollar. |
 | **Medya** | Bağlantıdan indirme, yerel video dönüştürme, GIF oluşturma, görsel araçları, OCR, ekran görüntüsü ve ekran kaydı. |
 | **Ses** | Uygulama bazında ses seviyesi, çıkış yönlendirme, aygıt değiştirme, giriş sabitleme ve genel mikrofon susturma. |
 | **Dosyalar** | Pano geçmişi, metin parçaları, geçici raf, Finder’da kes-yapıştır, DMG kurulumu ve uygulama temizleme. |
@@ -154,7 +181,7 @@ Menubench, sık kullandığınız Mac araçlarını tek bir menü çubuğu simge
 
 ### Kurulum
 
-[Menubench.dmg indir](https://github.com/augrclk/menubench/releases/latest/download/Menubench.dmg), açın ve **Menubench** uygulamasını **Applications / Uygulamalar** klasörüne sürükleyin. Yayımlanan sürümler Apple Developer ID ile imzalanır, Apple tarafından noterlenir ve çevrimdışı doğrulama için noter kaydı uygulamaya işlenir.
+[Menubench.dmg dosyasını indirin](https://github.com/augrclk/menubench/releases/latest/download/Menubench.dmg), açın ve **Menubench** uygulamasını **Applications / Uygulamalar** klasörüne sürükleyin. Yayımlanan sürümler Apple Developer ID ile imzalanır, Apple tarafından noterlenir ve çevrimdışı doğrulama için noter kaydı uygulamaya işlenir.
 
 Homebrew ile kurmak için:
 
@@ -172,7 +199,7 @@ brew uninstall --cask menubench
 
 ### Öncelik gizlilikte
 
-Menubench hesap, reklam, analiz veya telemetri içermez. Araçların çoğu tamamen Mac’inizde çalışır. Ağ erişimi yalnızca seçtiğiniz işlem gerektirdiğinde kullanılır; örneğin medya indirme, hız testi, Homebrew işlemi veya güncelleme denetimi sırasında.
+Menubench hesap, reklam, analiz veya telemetri içermez. Araçların çoğu tamamen Mac’inizde çalışır. Ağ erişimi yalnızca seçtiğiniz işlem gerektirdiğinde kullanılır; örneğin medya indirme, Homebrew işlemi veya güncelleme denetimi sırasında.
 
 İzinler özellik bazında istenir ve isteğe bağlı kalır. Ayrıntılar için [Gizlilik](docs/PRIVACY.md) ve [İzinler](docs/PERMISSIONS.md) belgelerine bakın.
 
@@ -195,14 +222,14 @@ brew install yt-dlp ffmpeg deno
 
 ## Contributing · Katkı
 
-Focused fixes, new tools and translations are welcome. Read [CONTRIBUTING.md](CONTRIBUTING.md), then open an issue with the macOS version and hardware used for testing.
+Focused fixes, thoughtful new tools and translations are welcome. Read [CONTRIBUTING.md](CONTRIBUTING.md), then open an issue with the macOS version and hardware used for testing.
 
-Odaklı hata düzeltmeleri, yeni araçlar ve çeviriler kabul edilir. [CONTRIBUTING.md](CONTRIBUTING.md) belgesini okuyup testte kullandığınız macOS sürümü ve donanımla birlikte bir sorun kaydı açabilirsiniz.
+Odaklı hata düzeltmeleri, düşünülmüş yeni araçlar ve çeviriler kabul edilir. [CONTRIBUTING.md](CONTRIBUTING.md) belgesini okuyup testte kullandığınız macOS sürümü ve donanımla birlikte bir sorun kaydı açabilirsiniz.
 
-## License · Lisans
+## License and attribution · Lisans ve atıf
 
-Menubench is distributed under [GPL-3.0-or-later](LICENSE). Copyright and third-party notices are recorded in [NOTICE](NOTICE).
+Menubench is distributed under [GPL-3.0-or-later](LICENSE). Retained upstream copyright and third-party notices are recorded in [NOTICE](NOTICE). The Menubench name and visual identity are covered separately by [TRADEMARKS.md](TRADEMARKS.md).
 
-Menubench, [GPL-3.0-or-later](LICENSE) lisansı altında dağıtılır. Telif ve üçüncü taraf bildirimleri [NOTICE](NOTICE) dosyasındadır.
+Menubench, [GPL-3.0-or-later](LICENSE) lisansı altında dağıtılır. Korunması gereken kaynak proje telifleri ve üçüncü taraf bildirimleri [NOTICE](NOTICE) dosyasındadır. Menubench adı ve görsel kimliği ayrıca [TRADEMARKS.md](TRADEMARKS.md) kapsamında korunur.
 
 © 2026 Arif Uğur Çelik
