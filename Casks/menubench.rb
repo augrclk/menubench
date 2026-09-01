@@ -1,8 +1,8 @@
 cask "menubench" do
-  version :latest
-  sha256 :no_check
+  version "1.0.0"
+  sha256 "baeb5575d652d81a9804aaf46810943f0b55af78d44858c7add7936d71841d57"
 
-  url "https://github.com/augrclk/menubench/releases/latest/download/Menubench.dmg",
+  url "https://github.com/augrclk/menubench/releases/download/v#{version}/Menubench-#{version}.dmg",
       verified: "github.com/augrclk/menubench/"
   name "Menubench"
   desc "Local-first menu bar workbench for everyday Mac tasks"
