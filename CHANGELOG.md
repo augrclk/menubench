@@ -1,5 +1,14 @@
 # Menubench Changelog
 
+## [1.0.1] - 2026-09-01
+
+### Improvements
+
+- Added automatic recovery for intermittent YouTube `HTTP 403` download failures.
+- Menubench now retries the media connection, refreshes an outdated Homebrew `yt-dlp` installation when needed and resumes the download without asking the user to run Terminal commands.
+- Added bounded HTTP and fragment retries, cancellable recovery steps and clear Turkish and English status messages.
+- Kept permanent link and extractor errors visible instead of retrying them indefinitely.
+
 ## [1.0.0] - 2026-08-31
 
 ### Highlights

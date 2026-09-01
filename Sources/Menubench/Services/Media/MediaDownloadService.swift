@@ -14,18 +14,36 @@ enum MediaDownloadState: Equatable {
     case idle
     case running(MediaDownloadProgress)
     case completed(URL)
-    case failed(String)
+    case failed(MediaDownloadFailure)
     case cancelled
+}
+
+enum MediaDownloadFailure: Equatable {
+    case message(String)
+    case temporaryAccessDenied(engineRefreshAttempted: Bool)
 }
 
 @MainActor
 final class MediaDownloadService: ObservableObject {
+    private enum RecoveryCommand {
+        case updateMetadata
+        case upgradeYtDLP
+
+        var arguments: [String] {
+            switch self {
+            case .updateMetadata: return ["update"]
+            case .upgradeYtDLP: return ["upgrade", "yt-dlp"]
+            }
+        }
+    }
+
     @Published private(set) var state: MediaDownloadState = .idle
     @Published private(set) var dependencies = MediaDownloadDependencies()
 
     private let workerQueue = DispatchQueue(label: "com.menubench.media-download", qos: .userInitiated)
     private var operationID: UUID?
     private var activeProcess: Process?
+    private var pendingRetry: DispatchWorkItem?
 
     init() {
         refreshDependencies()
@@ -52,7 +70,7 @@ final class MediaDownloadService: ObservableObject {
     func start(sourceURL: URL, options: MediaDownloadOptions) {
         refreshDependencies()
         guard dependencies.isReadyForYouTube, let ytDLP = dependencies.ytDLP else {
-            state = .failed("Missing tools: \(dependencies.missingNames.joined(separator: ", ")).")
+            state = .failed(.message("Missing tools: \(dependencies.missingNames.joined(separator: ", "))."))
             return
         }
 
@@ -60,13 +78,28 @@ final class MediaDownloadService: ObservableObject {
             try FileManager.default.createDirectory(at: options.destinationDirectory,
                                                     withIntermediateDirectories: true)
         } catch {
-            state = .failed(error.localizedDescription)
+            state = .failed(.message(error.localizedDescription))
             return
         }
 
         cancelProcess(publishCancelled: false)
         let id = UUID()
         operationID = id
+        launchDownload(sourceURL: sourceURL,
+                       options: options,
+                       ytDLP: ytDLP,
+                       operationID: id,
+                       attempt: 0,
+                       updateAttempted: false)
+    }
+
+    private func launchDownload(sourceURL: URL,
+                                options: MediaDownloadOptions,
+                                ytDLP: URL,
+                                operationID id: UUID,
+                                attempt: Int,
+                                updateAttempted: Bool) {
+        guard operationID == id else { return }
         let process = Process()
         let pipe = Pipe()
         process.executableURL = ytDLP
@@ -79,7 +112,7 @@ final class MediaDownloadService: ObservableObject {
         state = .running(MediaDownloadProgress(fraction: 0,
                                                speed: nil,
                                                eta: nil,
-                                               stage: .preparing))
+                                               stage: attempt == 0 ? .preparing : .retrying))
 
         workerQueue.async { [weak self] in
             var pending = Data()
@@ -118,14 +151,19 @@ final class MediaDownloadService: ObservableObject {
                     self?.finish(operationID: id,
                                  status: status,
                                  destination: finalDestination ?? options.destinationDirectory,
-                                 recentLines: recentLines)
+                                 recentLines: recentLines,
+                                 sourceURL: sourceURL,
+                                 options: options,
+                                 ytDLP: ytDLP,
+                                 attempt: attempt,
+                                 updateAttempted: updateAttempted)
                 }
             } catch {
                 Task { @MainActor [weak self] in
                     guard self?.operationID == id else { return }
                     self?.activeProcess = nil
                     self?.operationID = nil
-                    self?.state = .failed(error.localizedDescription)
+                    self?.state = .failed(.message(error.localizedDescription))
                 }
             }
         }
@@ -167,12 +205,59 @@ final class MediaDownloadService: ObservableObject {
     private func finish(operationID id: UUID,
                         status: Int32,
                         destination: URL,
-                        recentLines: [String]) {
+                        recentLines: [String],
+                        sourceURL: URL,
+                        options: MediaDownloadOptions,
+                        ytDLP: URL,
+                        attempt: Int,
+                        updateAttempted: Bool) {
         guard operationID == id else { return }
-        operationID = nil
         activeProcess = nil
         if status == 0 {
+            operationID = nil
             state = .completed(destination)
+            return
+        }
+
+        let brewURL = MediaDownloadSupport.executableURL(named: "brew")
+        switch MediaDownloadSupport.recoveryAction(recentLines: recentLines,
+                                                   attempt: attempt,
+                                                   updateAttempted: updateAttempted,
+                                                   homebrewAvailable: brewURL != nil) {
+        case let .retry(delay):
+            scheduleRetry(sourceURL: sourceURL,
+                          options: options,
+                          ytDLP: ytDLP,
+                          operationID: id,
+                          attempt: attempt + 1,
+                          updateAttempted: updateAttempted,
+                          after: delay)
+            return
+        case .updateEngine:
+            guard let brewURL else {
+                scheduleRetry(sourceURL: sourceURL,
+                              options: options,
+                              ytDLP: ytDLP,
+                              operationID: id,
+                              attempt: attempt + 1,
+                              updateAttempted: true,
+                              after: 3)
+                return
+            }
+            beginEngineUpdate(brewURL: brewURL,
+                              sourceURL: sourceURL,
+                              options: options,
+                              ytDLP: ytDLP,
+                              operationID: id,
+                              nextAttempt: attempt + 1)
+            return
+        case .fail:
+            break
+        }
+
+        operationID = nil
+        if MediaDownloadSupport.isHTTP403(recentLines) {
+            state = .failed(.temporaryAccessDenied(engineRefreshAttempted: updateAttempted))
             return
         }
         let usefulLine = recentLines.reversed().first { line in
@@ -181,10 +266,138 @@ final class MediaDownloadService: ObservableObject {
         }
         let message = usefulLine.map { String($0.suffix(420)) }
             ?? "yt-dlp exited with status \(status)."
-        state = .failed(message)
+        state = .failed(.message(message))
+    }
+
+    private func scheduleRetry(sourceURL: URL,
+                               options: MediaDownloadOptions,
+                               ytDLP: URL,
+                               operationID id: UUID,
+                               attempt: Int,
+                               updateAttempted: Bool,
+                               after delay: TimeInterval) {
+        guard operationID == id else { return }
+        state = .running(MediaDownloadProgress(fraction: 0,
+                                               speed: nil,
+                                               eta: nil,
+                                               stage: .retrying))
+        pendingRetry?.cancel()
+        let work = DispatchWorkItem { [weak self] in
+            Task { @MainActor [weak self] in
+                guard let self, self.operationID == id else { return }
+                self.pendingRetry = nil
+                self.launchDownload(sourceURL: sourceURL,
+                                    options: options,
+                                    ytDLP: ytDLP,
+                                    operationID: id,
+                                    attempt: attempt,
+                                    updateAttempted: updateAttempted)
+            }
+        }
+        pendingRetry = work
+        workerQueue.asyncAfter(deadline: .now() + delay, execute: work)
+    }
+
+    private func beginEngineUpdate(brewURL: URL,
+                                   sourceURL: URL,
+                                   options: MediaDownloadOptions,
+                                   ytDLP: URL,
+                                   operationID id: UUID,
+                                   nextAttempt: Int) {
+        guard operationID == id else { return }
+        state = .running(MediaDownloadProgress(fraction: 0,
+                                               speed: nil,
+                                               eta: nil,
+                                               stage: .updatingEngine))
+        launchRecoveryCommand(.updateMetadata,
+                              brewURL: brewURL,
+                              sourceURL: sourceURL,
+                              options: options,
+                              ytDLP: ytDLP,
+                              operationID: id,
+                              nextAttempt: nextAttempt)
+    }
+
+    private func launchRecoveryCommand(_ command: RecoveryCommand,
+                                       brewURL: URL,
+                                       sourceURL: URL,
+                                       options: MediaDownloadOptions,
+                                       ytDLP: URL,
+                                       operationID id: UUID,
+                                       nextAttempt: Int) {
+        guard operationID == id else { return }
+        let process = Process()
+        let pipe = Pipe()
+        process.executableURL = brewURL
+        process.arguments = command.arguments
+        var environment = ProcessInfo.processInfo.environment
+        environment["HOMEBREW_NO_ANALYTICS"] = "1"
+        environment["HOMEBREW_NO_AUTO_UPDATE"] = "1"
+        environment["HOMEBREW_NO_ENV_HINTS"] = "1"
+        environment["HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK"] = "1"
+        process.environment = environment
+        process.standardOutput = pipe
+        process.standardError = pipe
+        activeProcess = process
+
+        workerQueue.async { [weak self] in
+            let status: Int32
+            do {
+                try process.run()
+                _ = pipe.fileHandleForReading.readDataToEndOfFile()
+                process.waitUntilExit()
+                status = process.terminationStatus
+            } catch {
+                status = -1
+            }
+            Task { @MainActor [weak self] in
+                self?.finishRecoveryCommand(command,
+                                            status: status,
+                                            brewURL: brewURL,
+                                            sourceURL: sourceURL,
+                                            options: options,
+                                            ytDLP: ytDLP,
+                                            operationID: id,
+                                            nextAttempt: nextAttempt)
+            }
+        }
+    }
+
+    private func finishRecoveryCommand(_ command: RecoveryCommand,
+                                       status: Int32,
+                                       brewURL: URL,
+                                       sourceURL: URL,
+                                       options: MediaDownloadOptions,
+                                       ytDLP: URL,
+                                       operationID id: UUID,
+                                       nextAttempt: Int) {
+        guard operationID == id else { return }
+        activeProcess = nil
+        switch command {
+        case .updateMetadata:
+            launchRecoveryCommand(.upgradeYtDLP,
+                                  brewURL: brewURL,
+                                  sourceURL: sourceURL,
+                                  options: options,
+                                  ytDLP: ytDLP,
+                                  operationID: id,
+                                  nextAttempt: nextAttempt)
+        case .upgradeYtDLP:
+            refreshDependencies()
+            let refreshedYtDLP = dependencies.ytDLP ?? ytDLP
+            scheduleRetry(sourceURL: sourceURL,
+                          options: options,
+                          ytDLP: refreshedYtDLP,
+                          operationID: id,
+                          attempt: nextAttempt,
+                          updateAttempted: true,
+                          after: status == 0 ? 0.4 : 3)
+        }
     }
 
     private func cancelProcess(publishCancelled: Bool) {
+        pendingRetry?.cancel()
+        pendingRetry = nil
         operationID = nil
         if let process = activeProcess, process.isRunning {
             process.terminate()

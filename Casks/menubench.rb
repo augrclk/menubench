@@ -1,6 +1,6 @@
 cask "menubench" do
-  version "1.0.0"
-  sha256 "baeb5575d652d81a9804aaf46810943f0b55af78d44858c7add7936d71841d57"
+  version "1.0.1"
+  sha256 "02895d4c96cf8ffac572cd2af2a3a55e5ed880f70a5ae2c0341f79f182f0c4b5"
 
   url "https://github.com/augrclk/menubench/releases/download/v#{version}/Menubench-#{version}.dmg",
       verified: "github.com/augrclk/menubench/"

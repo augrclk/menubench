@@ -84,9 +84,17 @@ struct MediaDownloadDependencies: Equatable {
 
 enum MediaDownloadStage: String, Equatable {
     case preparing
+    case retrying
+    case updatingEngine
     case downloading
     case merging
     case converting
+}
+
+enum MediaDownloadRecoveryAction: Equatable {
+    case retry(after: TimeInterval)
+    case updateEngine
+    case fail
 }
 
 enum MediaDownloadOutputEvent: Equatable {
@@ -100,6 +108,7 @@ enum MediaDownloadSupport {
     static let installCommand = "brew install yt-dlp ffmpeg deno"
     static let progressMarker = "__MENUBENCH_PROGRESS__"
     static let fileMarker = "__MENUBENCH_FILE__"
+    static let maximumAutomaticAttempts = 4
 
     static func validatedRemoteURL(_ rawValue: String) -> URL? {
         let trimmed = rawValue.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -147,6 +156,9 @@ enum MediaDownloadSupport {
             "--no-playlist",
             "--newline",
             "--no-colors",
+            "--retries", "5",
+            "--fragment-retries", "5",
+            "--retry-sleep", "http:exp=1:5",
             "--progress",
             "--progress-template",
             "download:\(progressMarker)%(progress._percent_str)s|%(progress._speed_str)s|%(progress._eta_str)s",
@@ -193,6 +205,28 @@ enum MediaDownloadSupport {
         }
         arguments.append(sourceURL.absoluteString)
         return arguments
+    }
+
+    static func recoveryAction(recentLines: [String],
+                               attempt: Int,
+                               updateAttempted: Bool,
+                               homebrewAvailable: Bool) -> MediaDownloadRecoveryAction {
+        guard isHTTP403(recentLines) else { return .fail }
+        if attempt == 0 { return .retry(after: 1.5) }
+        if !updateAttempted && homebrewAvailable { return .updateEngine }
+        if attempt + 1 < maximumAutomaticAttempts {
+            return .retry(after: attempt == 1 ? 3 : 6)
+        }
+        return .fail
+    }
+
+    static func isHTTP403(_ lines: [String]) -> Bool {
+        lines.contains { line in
+            let normalized = line.lowercased()
+            return normalized.contains("http error 403")
+                || normalized.contains("403: forbidden")
+                || normalized.contains("http 403 forbidden")
+        }
     }
 
     static func videoFormatSelector(quality: MediaDownloadVideoQuality) -> String {

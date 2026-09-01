@@ -9,7 +9,9 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 
 APP_NAME="Menubench"
-APP="build/stage/$APP_NAME.app"
+# CI uses build/stage. Local release builds may live in a temporary directory
+# so File Provider metadata cannot invalidate their Developer ID signature.
+APP="${MENUBENCH_DMG_APP:-build/stage/$APP_NAME.app}"
 VOLUME="$APP_NAME"
 STAGING=""
 WORK=""

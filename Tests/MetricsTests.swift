@@ -5670,9 +5670,11 @@ struct MetricsTests {
         expect(mp3DownloadArguments.contains("-x")
                 && mp3DownloadArguments.contains("mp3")
                 && mp3DownloadArguments.contains("320K")
+                && mp3DownloadArguments.contains("--retry-sleep")
+                && mp3DownloadArguments.contains("http:exp=1:5")
                 && mp3DownloadArguments.contains("deno:/opt/homebrew/bin/deno")
                 && mp3DownloadArguments.last == downloaderSource?.absoluteString,
-               "MP3 downloads request extraction, quality, Deno and the validated source URL")
+               "MP3 downloads request extraction, bounded HTTP retries, quality, Deno and the validated source URL")
 
         let movDownloadArguments = MediaDownloadSupport.arguments(
             sourceURL: downloaderSource ?? URL(string: "https://example.com/video")!,
@@ -5704,6 +5706,30 @@ struct MetricsTests {
                 && MediaDownloadSupport.parseOutputLine("[Merger] Merging formats") == .stage(.merging)
                 && MediaDownloadSupport.parseOutputLine("[ExtractAudio] Destination") == .stage(.converting),
                "Downloader output reports its final file and post-processing stages")
+
+        let forbiddenDownloadLines = [
+            "[download] Got error: HTTP Error 403: Forbidden",
+            "ERROR: unable to download video data: HTTP Error 403: Forbidden",
+        ]
+        expect(MediaDownloadSupport.isHTTP403(forbiddenDownloadLines)
+                && MediaDownloadSupport.recoveryAction(recentLines: forbiddenDownloadLines,
+                                                       attempt: 0,
+                                                       updateAttempted: false,
+                                                       homebrewAvailable: true) == .retry(after: 1.5)
+                && MediaDownloadSupport.recoveryAction(recentLines: forbiddenDownloadLines,
+                                                       attempt: 1,
+                                                       updateAttempted: false,
+                                                       homebrewAvailable: true) == .updateEngine
+                && MediaDownloadSupport.recoveryAction(recentLines: forbiddenDownloadLines,
+                                                       attempt: 3,
+                                                       updateAttempted: true,
+                                                       homebrewAvailable: true) == .fail,
+               "Downloader recovers from 403 once, refreshes yt-dlp, then stops at a bounded attempt count")
+        expect(MediaDownloadSupport.recoveryAction(recentLines: ["ERROR: Unsupported URL"],
+                                                   attempt: 0,
+                                                   updateAttempted: false,
+                                                   homebrewAvailable: true) == .fail,
+               "Downloader does not hide permanent yt-dlp errors behind automatic recovery")
 
         // MARK: Media size targets
 

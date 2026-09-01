@@ -59,7 +59,7 @@ body:
     id: version
     attributes:
       label: Menubench version
-      placeholder: "1.0.0"
+      placeholder: "1.0.1"
     validations:
       required: true
 

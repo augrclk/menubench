@@ -327,8 +327,8 @@ struct MediaDownloaderView: View {
                 .foregroundStyle(.secondary)
                 .lineLimit(2)
                 .transition(.opacity)
-        case let .failed(message):
-            Label(message, systemImage: "exclamationmark.circle.fill")
+        case let .failed(failure):
+            Label(failureMessage(failure), systemImage: "exclamationmark.circle.fill")
                 .font(.system(size: 10.5, weight: .medium))
                 .foregroundStyle(Theme.accent)
                 .fixedSize(horizontal: false, vertical: true)
@@ -407,9 +407,19 @@ struct MediaDownloaderView: View {
     private func stageTitle(_ stage: MediaDownloadStage) -> String {
         switch stage {
         case .preparing: return strings.preparing
+        case .retrying: return strings.retrying
+        case .updatingEngine: return strings.updatingEngine
         case .downloading: return strings.downloading
         case .merging: return strings.merging
         case .converting: return strings.converting
+        }
+    }
+
+    private func failureMessage(_ failure: MediaDownloadFailure) -> String {
+        switch failure {
+        case let .message(message): return message
+        case let .temporaryAccessDenied(engineRefreshAttempted):
+            return engineRefreshAttempted ? strings.temporaryFailure : strings.temporaryFailureWithoutUpdate
         }
     }
 
