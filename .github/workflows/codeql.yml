@@ -29,7 +29,7 @@ jobs:
             runner: ubuntu-latest
             build-mode: none
     runs-on: ${{ matrix.runner }}
-    timeout-minutes: 45
+    timeout-minutes: 60
     permissions:
       contents: read
       security-events: write
@@ -44,6 +44,8 @@ jobs:
           build-mode: ${{ matrix.build-mode }}
           queries: security-extended
 
+      # Keep Release compilation conditions, but avoid optimizing and extracting
+      # both architectures. Universal optimized builds are checked by CI.
       - name: Build Swift app and privileged helper
         if: matrix.language == 'swift'
         run: |
@@ -51,7 +53,10 @@ jobs:
             -project Menubench.xcodeproj \
             -scheme Menubench \
             -configuration Release \
+            -destination "platform=macOS,arch=arm64" \
             -derivedDataPath build/CodeQL \
+            ONLY_ACTIVE_ARCH=YES \
+            SWIFT_OPTIMIZATION_LEVEL=-Onone \
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGNING_REQUIRED=NO \
             clean build
