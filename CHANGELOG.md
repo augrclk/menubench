@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [1.0.2] - 2026-10-03
+
 ### Security
 
 - Require local approval before imported Command Bar scripts can run.

@@ -58,8 +58,8 @@ FAN_HELPER_ID="$APP_BUNDLE_ID.fan-control"
 TARGET="arm64-apple-macosx14.0"
 ENTITLEMENTS="Resources/Menubench.entitlements"
 LEGACY_IDENTITY="Menubench Local Signing"
-MARKETING_VERSION="1.0.1"
-CURRENT_PROJECT_VERSION="2"
+MARKETING_VERSION="1.0.2"
+CURRENT_PROJECT_VERSION="3"
 MACOSX_DEPLOYMENT_TARGET="14.0"
 
 developer_id_identity() {
