@@ -1219,7 +1219,7 @@ enum CommandBarCatalog {
     /// runs, so one row serves both "gh" and "gh menubench".
     static func linkEntries(_ links: [CommandBarLink],
                             bar: CommandBarFeatureStrings) -> [CommandBarEntry] {
-        links.map { link in
+        links.filter { $0.kind != .script || !$0.requiresApproval }.map { link in
             CommandBarEntry(
                 id: "link.\(link.id.uuidString)",
                 title: link.name,
@@ -1304,6 +1304,7 @@ enum CommandBarCatalog {
     /// at once instead of waiting, and leaves the bar open the way a search
     /// does, since there is nothing to copy until the row shows an answer.
     private static func runScript(_ link: CommandBarLink) {
+        guard !link.requiresApproval else { return }
         let service = CommandBarService.shared
         let typed = service.queryWhenRun.trimmingCharacters(in: .whitespaces)
         let argument = CommandBarLinks.trailingArgument(query: typed, name: link.name) ?? ""

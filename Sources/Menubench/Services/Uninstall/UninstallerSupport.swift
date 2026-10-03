@@ -76,6 +76,20 @@ enum UninstallerSupport {
         hasLeftovers ? "exclamationmark.triangle.fill" : "checkmark.circle.fill"
     }
 
+    /// Team-prefixed macOS groups are bound to the app's signer by the OS.
+    /// `group.*` identifiers require provisioning-profile authorization, which
+    /// this scanner does not verify, so they never become deletion authority.
+    static func ownedGroupIDs(_ groupIDs: [String], teamID: String?,
+                              hasTrustedSignature: Bool) -> Set<String> {
+        guard hasTrustedSignature, let teamID,
+              CleanerSupport.isTeamIdentifier(teamID) else { return [] }
+        return Set(groupIDs.filter { group in
+            group.hasPrefix(teamID + ".") && group.count > teamID.count + 1
+                && !group.contains("..")
+                && group.range(of: #"^[A-Za-z0-9.-]+$"#, options: .regularExpression) != nil
+        })
+    }
+
     static func verifiedBundleID(_ rawValue: String?) -> String? {
         guard let rawValue,
               CleanerSupport.looksLikeBundleID(rawValue),

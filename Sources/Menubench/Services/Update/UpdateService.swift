@@ -287,7 +287,7 @@ final class UpdateService: ObservableObject {
                     }
                     // Move out of the session's scratch space before handing off.
                     let dmgURL = FileManager.default.temporaryDirectory
-                        .appendingPathComponent("Menubench-update.dmg")
+                        .appendingPathComponent("Menubench-update-\(UUID().uuidString).dmg")
                     try? FileManager.default.removeItem(at: dmgURL)
                     do {
                         try FileManager.default.moveItem(at: tempURL, to: dmgURL)
@@ -327,7 +327,9 @@ final class UpdateService: ObservableObject {
         let pid = ProcessInfo.processInfo.processIdentifier
         let fm = FileManager.default
 
-        guard let resultURL = Self.installResultURL, let expectedVersion = offered else {
+        guard let resultURL = Self.installResultURL, let expectedVersion = offered,
+              let expectedTeamID = FanControlIdentifiers.teamID,
+              FanControlSigningPolicy.validTeamID(expectedTeamID) else {
             abortInstall(dmgPath: dmgPath, offered: offered)
             return
         }
@@ -341,18 +343,29 @@ final class UpdateService: ObservableObject {
         if fm.isWritableFile(atPath: appDirectory),
            !UpdateInstallerSupport.shouldForceAdminInstall(afterFailureCode: lastFailure) {
             launchUserInstaller(appPath: appPath, dmgPath: dmgPath, pid: pid,
-                                resultPath: resultURL.path, expectedVersion: expectedVersion)
+                                resultPath: resultURL.path, expectedVersion: expectedVersion,
+                                expectedTeamID: expectedTeamID)
         } else {
             // Either the folder is not writable, or the last attempt died at
             // the copy/swap step: retry with admin rights instead of failing
             // the same way twice.
+            guard UpdateInstallerSupport.permitsElevatedInstall(appPath: appPath) else {
+                abortInstall(dmgPath: dmgPath, offered: offered)
+                let strings = SecurityFeatureStrings.forLanguage(L10n.shared.language)
+                let alert = NSAlert()
+                alert.messageText = strings.manualUpdateTitle
+                alert.informativeText = strings.manualUpdateBody
+                alert.runModal()
+                return
+            }
             launchAdminInstaller(appPath: appPath, dmgPath: dmgPath, pid: pid,
-                                 resultPath: resultURL.path, expectedVersion: expectedVersion)
+                                 resultPath: resultURL.path, expectedVersion: expectedVersion,
+                                 expectedTeamID: expectedTeamID)
         }
     }
 
     private func launchUserInstaller(appPath: String, dmgPath: String, pid: Int32,
-                                     resultPath: String, expectedVersion: String) {
+                                     resultPath: String, expectedVersion: String, expectedTeamID: String) {
         let scriptURL = FileManager.default.temporaryDirectory
             .appendingPathComponent("menubench-update-\(pid)-\(UUID().uuidString).sh")
         do {
@@ -368,7 +381,7 @@ final class UpdateService: ObservableObject {
             // app's session and launchd job, before the swap it is here for.
             try DetachedProcess.spawn("/bin/sh",
                                       [scriptURL.path, appPath, dmgPath, "\(pid)", resultPath,
-                                       "\(getuid())", expectedVersion])
+                                       "\(getuid())", expectedVersion, expectedTeamID])
         } catch {
             try? FileManager.default.removeItem(at: scriptURL)
             failInstall(dmgPath: dmgPath, message: error.localizedDescription)
@@ -387,13 +400,14 @@ final class UpdateService: ObservableObject {
     /// its own session so the prompt returns while the installer waits for our
     /// exit — and so it survives that exit.
     private func launchAdminInstaller(appPath: String, dmgPath: String, pid: Int32,
-                                      resultPath: String, expectedVersion: String) {
+                                      resultPath: String, expectedVersion: String, expectedTeamID: String) {
         let command = UpdateInstallerSupport.elevatedInstallCommand(appPath: appPath,
                                                                     dmgPath: dmgPath,
                                                                     pid: pid,
                                                                     resultPath: resultPath,
                                                                     uid: getuid(),
-                                                                    expectedVersion: expectedVersion)
+                                                                    expectedVersion: expectedVersion,
+                                                                    expectedTeamID: expectedTeamID)
         AdminShell.runInProcess(command, prompt: L10n.shared.s.adminPromptUpdate) { [weak self] granted in
             DispatchQueue.main.async {
                 guard let self else { return }

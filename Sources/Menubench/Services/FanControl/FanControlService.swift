@@ -90,6 +90,11 @@ final class FanControlService: ObservableObject {
     }
 
     func authorize() {
+        guard FanControlSigningPolicy.validTeamID(FanControlIdentifiers.teamID) else {
+            accessState = .unavailable
+            error = .helperUnavailable
+            return
+        }
         refreshAccessState()
         switch accessState {
         case .requiresApproval:
@@ -241,6 +246,7 @@ final class FanControlService: ObservableObject {
             else { return false }
             return unregisterForRemoval(service)
         }
+        guard FanControlSigningPolicy.validTeamID(FanControlIdentifiers.teamID) else { return false }
         let connection = NSXPCConnection(machServiceName: FanControlIdentifiers.helperID,
                                          options: .privileged)
         connection.remoteObjectInterface = NSXPCInterface(with: FanControlXPCProtocol.self)
@@ -328,6 +334,7 @@ final class FanControlService: ObservableObject {
     }
 
     private func proxy(errorHandler: @escaping (NSXPCConnection) -> Void) -> FanControlXPCProtocol? {
+        guard FanControlSigningPolicy.validTeamID(FanControlIdentifiers.teamID) else { return nil }
         if connection == nil {
             let connection = NSXPCConnection(machServiceName: FanControlIdentifiers.helperID,
                                              options: .privileged)
@@ -391,6 +398,10 @@ final class FanControlService: ObservableObject {
     // MARK: - Registration and local reads
 
     private func refreshAccessState() {
+        guard FanControlSigningPolicy.validTeamID(FanControlIdentifiers.teamID) else {
+            accessState = .unavailable
+            return
+        }
         switch Self.appService.status {
         case .notRegistered: accessState = .notRegistered
         case .enabled: accessState = .enabled

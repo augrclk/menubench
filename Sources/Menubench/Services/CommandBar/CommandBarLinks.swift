@@ -42,6 +42,9 @@ struct CommandBarLink: Codable, Identifiable, Equatable {
     /// Only the person who saved it knows whether it has anything to do with
     /// no input at all.
     var runsWithoutArgument = false
+    /// Execution authority belongs to this Mac. The backup importer always
+    /// sets this flag on scripts, regardless of the value in the file.
+    var requiresApproval = false
 
     /// True when the destination waits for whatever is typed after the name,
     /// which is what turns a link into a search.
@@ -69,6 +72,8 @@ extension CommandBarLink {
         destination = try container.decodeIfPresent(String.self, forKey: .destination) ?? ""
         runsWithoutArgument = try container.decodeIfPresent(Bool.self,
                                                             forKey: .runsWithoutArgument) ?? false
+        requiresApproval = try container.decodeIfPresent(Bool.self,
+                                                         forKey: .requiresApproval) ?? false
     }
 }
 
@@ -187,6 +192,7 @@ enum CommandBarLinks {
     /// prefix of its name, or it would fire while the name is still being
     /// typed towards a longer one.
     static func scriptArgument(for link: CommandBarLink, query: String) -> String? {
+        guard link.kind == .script, !link.requiresApproval else { return nil }
         if let trailing = trailingArgument(query: query, name: link.name) { return trailing }
         guard link.runsWithoutArgument else { return nil }
         let normalizedName = CommandBarSearch.normalized(link.name)

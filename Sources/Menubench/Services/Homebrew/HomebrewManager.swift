@@ -694,6 +694,9 @@ final class HomebrewManager: ObservableObject {
             let process = Process()
             process.executableURL = URL(fileURLWithPath: command.executable)
             process.arguments = command.arguments
+            var environment = ProcessInfo.processInfo.environment
+            environment["HOMEBREW_NO_ANALYTICS"] = "1"
+            process.environment = environment
             let pipe = Pipe()
             process.standardOutput = pipe
             process.standardError = pipe
@@ -739,6 +742,9 @@ final class HomebrewManager: ObservableObject {
             let process = Process()
             process.executableURL = URL(fileURLWithPath: command.executable)
             process.arguments = command.arguments
+            var environment = ProcessInfo.processInfo.environment
+            environment["HOMEBREW_NO_ANALYTICS"] = "1"
+            process.environment = environment
             let pipe = Pipe()
             process.standardOutput = pipe
             process.standardError = pipe

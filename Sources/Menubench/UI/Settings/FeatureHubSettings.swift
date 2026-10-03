@@ -466,6 +466,7 @@ struct PermissionsPortalSections: View {
             // read the moment the portal shows; automation is checked off the
             // main thread because the AE round trip can block briefly.
             permissions.refresh()
+            if visiblePermissions.contains(.fullDiskAccess) { permissions.refreshFullDiskAccess() }
             if visiblePermissions.contains(.accessibility)
                 || visiblePermissions.contains(.screenRecording) {
                 permissions.setActivePermissionSurface(pollingDemandID, visible: true)

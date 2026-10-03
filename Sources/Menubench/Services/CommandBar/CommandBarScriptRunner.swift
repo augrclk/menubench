@@ -8,9 +8,8 @@ import Foundation
 /// typed so a later keystroke never overwrites the screen with a stale
 /// answer meant for a different query.
 ///
-/// Not part of the pure-function test harness (`./build.sh --test`): the
-/// behavior here is a background process and a timer, not a calculation.
-/// Verified by hand against a real saved script link instead.
+/// The test harness uses a harmless local script to verify that imported
+/// definitions cannot execute until explicitly approved.
 final class CommandBarScriptRunner {
     struct Result: Equatable {
         let text: String
@@ -60,7 +59,8 @@ final class CommandBarScriptRunner {
     /// nothing when a result is already cached for this exact link and
     /// argument, or when that same run is still going.
     func schedule(link: CommandBarLink, argument: String) {
-        guard cachedResult(linkID: link.id, argument: argument) == nil,
+        guard link.kind == .script, !link.requiresApproval,
+              cachedResult(linkID: link.id, argument: argument) == nil,
               !inFlight.contains(key(link.id, argument)) else { return }
         pendingWorkItem?.cancel()
         let workItem = DispatchWorkItem { [weak self] in self?.execute(link: link, argument: argument) }
@@ -71,13 +71,15 @@ final class CommandBarScriptRunner {
     /// Runs at once instead of waiting out the debounce, for the moment
     /// Return is pressed before a result exists yet.
     func runNow(link: CommandBarLink, argument: String) {
-        guard cachedResult(linkID: link.id, argument: argument) == nil,
+        guard link.kind == .script, !link.requiresApproval,
+              cachedResult(linkID: link.id, argument: argument) == nil,
               !inFlight.contains(key(link.id, argument)) else { return }
         cancelPending()
         execute(link: link, argument: argument)
     }
 
     private func execute(link: CommandBarLink, argument: String) {
+        guard link.kind == .script, !link.requiresApproval else { return }
         let cacheKey = key(link.id, argument)
         let runGeneration = generation
         let path = (link.destination as NSString).expandingTildeInPath

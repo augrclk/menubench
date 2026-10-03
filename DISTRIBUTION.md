@@ -15,7 +15,7 @@ Open `Menubench.xcodeproj` and keep the Menubench app and fan-control helper on 
 
 ## GitHub Actions secrets
 
-Create a protected GitHub environment named `release-signing`, then add these repository or environment secrets:
+Use the GitHub environment named `release-signing`, which is referenced by the packaging job. Restrict its deployment branches and tags to tags matching `v*`, with no allowed branches. The preflight job also requires a stable semantic-version tag pointing to a commit on `main`. Add these secrets to that environment (repository secrets also work, but are accessible outside this environment):
 
 | Secret | Value |
 |---|---|

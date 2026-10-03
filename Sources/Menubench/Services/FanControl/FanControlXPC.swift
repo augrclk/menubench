@@ -11,6 +11,10 @@ enum FanControlIdentifiers {
         var ownCode: SecCode?
         guard SecCodeCopySelf(SecCSFlags(), &ownCode) == errSecSuccess,
               let ownCode else { return nil }
+        var appleAnchor: SecRequirement?
+        guard SecRequirementCreateWithString("anchor apple generic" as CFString, [],
+                                              &appleAnchor) == errSecSuccess,
+              SecCodeCheckValidity(ownCode, [], appleAnchor) == errSecSuccess else { return nil }
         var ownStaticCode: SecStaticCode?
         guard SecCodeCopyStaticCode(ownCode, SecCSFlags(), &ownStaticCode) == errSecSuccess,
               let ownStaticCode else { return nil }
@@ -37,14 +41,7 @@ enum FanControlIdentifiers {
     static let helperCodeRequirement = codeRequirement(identifier: helperID)
 
     private static func codeRequirement(identifier: String) -> String {
-        guard let teamID, !teamID.isEmpty else {
-            // Ad-hoc and local self-signed development identities do not carry
-            // an Apple Team ID. The fixed, fork-owned identifier still prevents
-            // an unrelated process from attaching to the development helper.
-            return "identifier \"\(identifier)\""
-        }
-        return "anchor apple generic and certificate leaf[subject.OU] = \"\(teamID)\" "
-            + "and identifier \"\(identifier)\""
+        FanControlSigningPolicy.codeRequirement(identifier: identifier, teamID: teamID)
     }
 }
 

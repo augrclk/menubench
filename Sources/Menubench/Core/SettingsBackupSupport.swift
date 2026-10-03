@@ -154,7 +154,18 @@ enum SettingsBackupSupport {
         else { return nil }
         let allowed = exportKeys()
         let filtered = settings.filter { allowed.contains($0.key) && valueLooksRight($0.key, $0.value) }
-        return portableMouseExceptions(portableMediaSettings(filtered))
+        var restored = portableMouseExceptions(portableMediaSettings(filtered))
+        if let data = restored[DefaultsKey.commandBarLinks] as? Data {
+            let links = CommandBarLinks.decode(data).map { link in
+                var imported = link
+                if imported.kind == .script { imported.requiresApproval = true }
+                return imported
+            }
+            restored[DefaultsKey.commandBarLinks] = CommandBarLinks.encode(links)
+        } else {
+            restored.removeValue(forKey: DefaultsKey.commandBarLinks)
+        }
+        return restored
     }
 
     static func formatVersion(from payload: [String: Any]) -> Int? {

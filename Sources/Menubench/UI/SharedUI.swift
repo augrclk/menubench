@@ -73,6 +73,7 @@ struct FullDiskAccessNote: View {
             RoundedRectangle(cornerRadius: compact ? 8 : 9, style: .continuous)
                 .fill(Color.primary.opacity(compact ? 0.045 : 0.05))
         )
+        .onAppear { permissions.refreshFullDiskAccess() }
     }
 }
 
