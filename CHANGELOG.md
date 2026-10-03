@@ -4,6 +4,10 @@
 
 ## [1.0.2] - 2026-10-03
 
+### Fixed
+
+- Correct shell quoting of the Apple signing requirements in the updater. The 1.0.1 updater rejects valid DMGs with `fail-dmg-verify`; users on that version must install the 1.0.2 DMG once to receive this fix.
+
 ### Security
 
 - Require local approval before imported Command Bar scripts can run.

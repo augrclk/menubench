@@ -149,6 +149,25 @@ enum SecurityRegressionTests {
             try UpdateInstallerSupport.installerScript().write(to: installer, atomically: true, encoding: .utf8)
             expect(run("/bin/sh", ["-n", installer.path]) == 0,
                    "the generated installer and embedded Perl pass shell syntax validation")
+            // Shell syntax alone misses quotes consumed by Swift and then sh:
+            // 1.0.1 produced a valid shell assignment but an invalid requirement.
+            let assignments = UpdateInstallerSupport.installerScript()
+                .components(separatedBy: "\n")
+                .filter { $0.hasPrefix("VERIFY_REQ=") || $0.hasPrefix("DMG_VERIFY_REQ=") }
+                .joined(separator: "\n")
+            let evaluated = Shell.run("/bin/sh", ["-c",
+                "EXPECTED_TEAM=63LRF2GW5Z\n" + assignments
+                    + "\nprintf '%s\\n' \"$VERIFY_REQ\" \"$DMG_VERIFY_REQ\""])
+            let requirements = evaluated.1.components(separatedBy: "\n").filter { !$0.isEmpty }
+            expect(evaluated.0 == 0 && requirements.count == 2,
+                   "both installer requirements survive shell evaluation")
+            for text in requirements {
+                var parsed: SecRequirement?
+                expect(SecRequirementCreateWithString(text as CFString, [], &parsed) == errSecSuccess,
+                       "the shell-evaluated update requirement parses with Apple's Security framework")
+                expect(text.contains("certificate leaf[subject.OU] = \"63LRF2GW5Z\""),
+                       "shell evaluation preserves the quoted signing-team constraint")
+            }
             expect(UpdateInstallerSupport.permitsElevatedInstall(appPath: "/Applications/Menubench.app")
                    && !UpdateInstallerSupport.permitsElevatedInstall(appPath: "/Users/test/Menubench.app")
                    && !UpdateInstallerSupport.permitsElevatedInstall(appPath: "/Applications/../tmp/Menubench.app"),

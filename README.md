@@ -26,6 +26,10 @@
 
 <p align="center"><sub>macOS 14 Sonoma or newer · Apple silicon and Intel · GPL-3.0-or-later</sub></p>
 
+> **Updating from 1.0.1:** If Update closes and reopens the old version (`fail-dmg-verify`), quit Menubench, download the [1.0.2 DMG](https://github.com/augrclk/menubench/releases/tag/v1.0.2), and replace Menubench in Applications. Version 1.0.2 fixes the updater's signature-requirement quoting. Your settings remain in your user Library.
+>
+> **1.0.1'den güncelleme:** Güncelle düğmesi eski sürümü kapatıp yeniden açıyorsa (`fail-dmg-verify`), Menubench'ten çıkın, [1.0.2 DMG'yi](https://github.com/augrclk/menubench/releases/tag/v1.0.2) indirin ve Uygulamalar'daki Menubench'i değiştirin. 1.0.2, güncelleyicinin imza koşulundaki tırnaklama hatasını düzeltir. Ayarlarınız kullanıcı Kitaplığında korunur.
+
 <br>
 
 <p align="center">
