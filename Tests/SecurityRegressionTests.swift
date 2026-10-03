@@ -78,12 +78,14 @@ enum SecurityRegressionTests {
                    "group authority rejects foreign teams, profile-only groups and malformed paths")
 
             // A development build must never authenticate by identifier alone.
-            for invalid in [nil, "", "abc", "63lrf2gw5z", "63LRF2GW5Z\" or true"] as [String?] {
+            for invalid in [nil, "", "abc", "63lrf2gw5z", "63LRF2GW5Z\n", "\n63LRF2GW5Z", "63LRF2GW5Z\" or true"] as [String?] {
                 expect(FanControlSigningPolicy.codeRequirement(identifier: "com.example.helper", teamID: invalid) == "never",
                        "missing or malformed Team ID fails closed")
             }
             expect(FanControlSigningPolicy.codeRequirement(identifier: "id\" or true", teamID: team) == "never",
                    "an identifier cannot inject a signing requirement")
+            expect(FanControlSigningPolicy.codeRequirement(identifier: "com.example.helper\n", teamID: team) == "never",
+                   "an identifier with a trailing newline fails closed")
             let requirementText = FanControlSigningPolicy.codeRequirement(identifier: "com.example.helper", teamID: team)
             var requirement: SecRequirement?
             expect(SecRequirementCreateWithString(requirementText as CFString, [], &requirement) == errSecSuccess,
