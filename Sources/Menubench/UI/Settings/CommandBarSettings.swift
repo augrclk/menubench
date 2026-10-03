@@ -203,6 +203,11 @@ struct CommandBarSettings: View {
                             .lineLimit(1)
                             .truncationMode(.middle)
                         Spacer()
+                        if link.kind == .script, link.requiresApproval {
+                            Text(SecurityFeatureStrings.forLanguage(l10n.language).importedScriptDisabled)
+                                .font(.caption)
+                                .foregroundStyle(.orange)
+                        }
                         Button(editLabel) { editing = link }
                             .buttonStyle(.bordered)
                             .controlSize(.mini)
@@ -325,8 +330,7 @@ struct CommandBarSettings: View {
         .formStyle(.grouped)
         .sheet(item: $editing) { link in
             CommandBarLinkEditor(draft: link, text: text, common: common) { saved in
-                save(saved)
-                editing = nil
+                if save(saved) { editing = nil }
             } cancel: {
                 editing = nil
             }
@@ -350,7 +354,19 @@ struct CommandBarSettings: View {
         CommandBarService.shared.syncWithPreferences()
     }
 
-    private func save(_ link: CommandBarLink) {
+    private func save(_ link: CommandBarLink) -> Bool {
+        var link = link
+        if link.kind == .script, link.requiresApproval {
+            let security = SecurityFeatureStrings.forLanguage(l10n.language)
+            let alert = NSAlert()
+            alert.messageText = security.reviewScriptTitle
+            alert.informativeText = String(format: security.reviewScriptBodyFormat,
+                                            link.destination)
+            alert.addButton(withTitle: security.allowScript)
+            alert.addButton(withTitle: l10n.s.uninstallerCancel)
+            guard alert.runModal() == .alertFirstButtonReturn else { return false }
+        }
+        link.requiresApproval = false
         var next = links
         if let index = next.firstIndex(where: { $0.id == link.id }) {
             next[index] = link
@@ -358,6 +374,7 @@ struct CommandBarSettings: View {
             next.append(link)
         }
         linksData = CommandBarLinks.encode(next) ?? Data()
+        return true
     }
 
     private func removeLink(_ link: CommandBarLink) {

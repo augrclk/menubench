@@ -477,3 +477,19 @@ enum SMCValueCodec {
         }
     }
 }
+
+/// An identifier alone is self-asserted by ad-hoc code, never a signer identity.
+enum FanControlSigningPolicy {
+    static func validTeamID(_ teamID: String?) -> Bool {
+        guard let teamID else { return false }
+        return teamID.range(of: #"^[A-Z0-9]{10}$"#, options: .regularExpression) != nil
+    }
+
+    static func codeRequirement(identifier: String, teamID: String?) -> String {
+        guard validTeamID(teamID), let teamID,
+              identifier.range(of: #"^[A-Za-z0-9.-]+$"#, options: .regularExpression) != nil
+        else { return "never" }
+        return "anchor apple generic and certificate leaf[subject.OU] = \"\(teamID)\" "
+            + "and identifier \"\(identifier)\""
+    }
+}

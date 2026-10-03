@@ -594,6 +594,11 @@ guard geteuid() == 0 else {
     exit(EXIT_FAILURE)
 }
 
+guard FanControlSigningPolicy.validTeamID(FanControlIdentifiers.teamID) else {
+    log.error("Privileged fan control requires an Apple-signed identity with a Team ID")
+    exit(EXIT_FAILURE)
+}
+
 private let controller = FanControlController()
 private let delegate = FanControlListenerDelegate(controller: controller)
 private let listener = NSXPCListener(machServiceName: FanControlIdentifiers.helperID)

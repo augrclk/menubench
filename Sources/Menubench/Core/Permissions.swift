@@ -46,6 +46,7 @@ final class Permissions: ObservableObject {
     private var activationObserver: NSObjectProtocol?
     private var defaultsObserver: NSObjectProtocol?
     private var permissionSurfaceDemands: Set<UUID> = []
+    private var fullDiskAccessStatusRequested = false
     private var currentPollInterval: TimeInterval?
 
     private init() {
@@ -119,16 +120,18 @@ final class Permissions: ObservableObject {
         scheduleActivePermissionPolling()
     }
 
-    /// Full refresh including Full Disk Access. Runs at launch and on activation.
+    /// Refresh status without touching protected files until a relevant feature is opened.
     func refresh() {
         refreshActivePermissions()
         refreshNotificationPermission()
         refreshCameraPermission()
         refreshMicrophonePermission()
-        // Checking Full Disk Access means asking the system about protected
-        // folders, and every refused answer costs time. Doing that where the
-        // app is starting up holds back the menu bar icon, so it moves off
-        // and reports back.
+        if fullDiskAccessStatusRequested { refreshFullDiskAccess() }
+    }
+
+    /// Only cleaner, uninstaller and permission UI need this protected-path probe.
+    func refreshFullDiskAccess() {
+        fullDiskAccessStatusRequested = true
         DispatchQueue.global(qos: .utility).async {
             let granted = Self.probeFullDiskAccess()
             DispatchQueue.main.async {

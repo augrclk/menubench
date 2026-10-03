@@ -652,14 +652,21 @@ final class AppUninstaller: ObservableObject {
         guard SecCodeCopySigningInformation(staticCode, flags, &info) == errSecSuccess,
               let info else { return ([], []) }
         let dict = info as NSDictionary
+        var appleAnchor: SecRequirement?
+        let trusted = SecRequirementCreateWithString("anchor apple generic" as CFString, [],
+                                                      &appleAnchor) == errSecSuccess
+            && SecStaticCodeCheckValidity(staticCode, [], appleAnchor) == errSecSuccess
         var teamIDs: Set<String> = []
-        if let team = dict[kSecCodeInfoTeamIdentifier] as? String {
+        if trusted, let team = dict[kSecCodeInfoTeamIdentifier] as? String,
+           CleanerSupport.isTeamIdentifier(team) {
             teamIDs.insert(team)
         }
         var groupIDs: Set<String> = []
         if let entitlements = dict[kSecCodeInfoEntitlementsDict] as? [String: Any],
            let groups = entitlements["com.apple.security.application-groups"] as? [String] {
-            groupIDs.formUnion(groups.filter { !$0.isEmpty })
+            groupIDs.formUnion(UninstallerSupport.ownedGroupIDs(
+                groups, teamID: dict[kSecCodeInfoTeamIdentifier] as? String,
+                hasTrustedSignature: trusted))
         }
         return (teamIDs, groupIDs)
     }

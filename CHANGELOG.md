@@ -1,5 +1,16 @@
 # Menubench Changelog
 
+## [Unreleased]
+
+### Security
+
+- Require local approval before imported Command Bar scripts can run.
+- Capture and verify updates in a private staging directory, use atomic bundle replacement and restrict administrator updates to the canonical Applications location.
+- Require Apple signing identity and a Team ID for privileged fan control.
+- Retain unverified and foreign-team app-group containers during app cleanup.
+- Defer Full Disk Access probes until a relevant feature or permission screen opens and disable Homebrew subprocess analytics.
+- Add Swift and GitHub Actions CodeQL scanning and adversarial regression tests.
+
 ## [1.0.1] - 2026-09-01
 
 ### Improvements

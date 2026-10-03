@@ -40,6 +40,8 @@ struct MetricsTests {
             if actual != expected { failures.append("\(label): got \(actual), expected \(expected)") }
         }
 
+        SecurityRegressionTests.run(expect: { condition, message in expect(condition, message) })
+
         // MARK: Byte / rate formatting
 
         expectEqual(MetricFormat.bytes(0), "0 B", "bytes zero")
@@ -8382,7 +8384,8 @@ struct MetricsTests {
                "installer requires the signed app to match the offered release version")
         expect(installerScript.contains("chown -R"),
                "an elevated install hands the bundle back to the user")
-        expect(installerScript.contains("update-old.$PID"),
+        expect(installerScript.contains("menubench-update.XXXXXXXX")
+               && installerScript.contains("$WORK/previous.app"),
                "the swap backup name is unique per run so a stale root-owned one never blocks it")
         expect(installerScript.contains("launchctl asuser"),
                "installer script relaunches as the user when running as root")
@@ -8399,7 +8402,8 @@ struct MetricsTests {
             pid: 123,
             resultPath: "/tmp/result",
             uid: 501,
-            expectedVersion: "3.3.3")
+            expectedVersion: "3.3.3",
+            expectedTeamID: "63LRF2GW5Z")
         expect(elevated.contains("POSIX::setsid()") && elevated.hasSuffix("&"),
                "elevated installer leaves this app's session so it outlives the app it replaces")
         expect(elevated.contains("nohup"),

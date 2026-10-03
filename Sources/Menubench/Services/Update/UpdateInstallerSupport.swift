@@ -17,33 +17,67 @@ enum UpdateInstallerSupport {
         return trimmed
     }
 
-    /// The installer: waits for the app to exit, verifies and mounts the DMG,
-    /// stages and verifies the new bundle, swaps it in and relaunches.
-    /// Arguments: $1 app path, $2 dmg path, $3 pid to wait for,
-    /// $4 result marker path, $5 uid to relaunch as (used when running as
-    /// root, where a plain `open` could launch the app as root), $6 expected
-    /// version from the trusted release tag.
+    /// Captures a bounded regular file through one descriptor. In particular,
+    /// a swapped symlink/FIFO cannot make root copy a different path or block.
+    /// The captured bytes are verified only AFTER the copy, in a private directory.
+    static let snapshotCopyProgram = #"""
+    use strict; use warnings; use Fcntl qw(:DEFAULT :mode);
+    my ($source, $destination, $limit) = @ARGV;
+    sysopen(my $input, $source, O_RDONLY | O_NOFOLLOW | O_NONBLOCK) or die "open source: $!";
+    my @info = stat($input);
+    @info && S_ISREG($info[2]) && $info[7] > 0 && $info[7] <= $limit or die "invalid source";
+    sysopen(my $output, $destination, O_WRONLY | O_CREAT | O_EXCL | O_NOFOLLOW, 0600)
+        or die "open snapshot: $!";
+    my $total = 0;
+    while (1) {
+        my $count = sysread($input, my $buffer, 65536);
+        defined($count) or die "read: $!";
+        last unless $count;
+        $total += $count;
+        $total <= $limit or die "download too large";
+        my $offset = 0;
+        while ($offset < $count) {
+            my $written = syswrite($output, $buffer, $count - $offset, $offset);
+            defined($written) && $written > 0 or die "write: $!";
+            $offset += $written;
+        }
+    }
+    $total == $info[7] or die "source changed size";
+    close($output) or die "close: $!";
+    """#
+
+    /// rename(2) treats its destination as an exact leaf. Unlike mv, it never
+    /// moves the bundle INTO a directory/symlink that appeared at the destination.
+    static let renameProgram = #"""
+    use strict; use warnings;
+    rename($ARGV[0], $ARGV[1]) or die "rename: $!";
+    """#
+
+    static func permitsElevatedInstall(appPath: String) -> Bool {
+        appPath == "/Applications/Menubench.app"
+    }
+
+    /// Arguments: app path, downloaded DMG path, pid, result marker, user uid,
+    /// expected release version, Team ID captured from the running signed app.
     static func installerScript() -> String {
-        """
+        let copy = shellSingleQuoted(snapshotCopyProgram)
+        let rename = shellSingleQuoted(renameProgram)
+        return """
         #!/bin/sh
-        APP="$1"; DMG="$2"; PID="$3"; RESULT="$4"; ASUSER="$5"; EXPECTED_VERSION="$6"
+        umask 077
+        PATH=/usr/bin:/bin:/usr/sbin:/sbin
+        export PATH
+        APP="$1"; DMG="$2"; PID="$3"; RESULT="$4"; ASUSER="$5"; EXPECTED_VERSION="$6"; EXPECTED_TEAM="$7"
         SCRIPT="$0"
-        # Pin every update to the Apple Developer team that signed the currently
-        # installed app. This keeps the updater secure without embedding one
-        # maintainer's Team ID in the open-source tree.
-        CURRENT_TEAM_ID="$(/usr/bin/codesign -dv --verbose=4 "$APP" 2>&1 \
-            | /usr/bin/awk -F= '/^TeamIdentifier=/{print $2; exit}')"
-        # Write-ahead markers go to a progress file; only a FINISHED run
-        # promotes it to the real marker. The app may relaunch while this
-        # script is still mid-install, and a transient step must not be
-        # reported as a failure.
+        WORK=""; MNT=""; BACKUP=""; LAUNCH="$APP"; RELAUNCH=0
         running_as_root() { [ "$(/usr/bin/id -u)" = "0" ]; }
+        # Never let caller-controlled numeric arguments become command options.
+        case "$ASUSER" in ''|0|*[!0-9]*) exit 1;; esac
+        case "$PID" in ''|0|*[!0-9]*) exit 1;; esac
+        [ "${#EXPECTED_TEAM}" = 10 ] || exit 1
+        case "$EXPECTED_TEAM" in *[!A-Z0-9]*) exit 1;; esac
         note() {
             if running_as_root; then
-                [ -n "$ASUSER" ] || return 1
-                # The marker directory belongs to the user. Drop privileges
-                # before opening it so a replaced path cannot make root follow
-                # a symlink while the administrator prompt is on screen.
                 /usr/bin/sudo -n -u "#$ASUSER" /bin/sh -c \
                     '/bin/echo "$1" > "$2.progress"' marker "$1" "$RESULT" 2>/dev/null
                 return
@@ -52,121 +86,114 @@ enum UpdateInstallerSupport {
         }
         finalize() {
             if running_as_root; then
-                [ -n "$ASUSER" ] || return 1
                 /usr/bin/sudo -n -u "#$ASUSER" /bin/mv -f \
                     "$RESULT.progress" "$RESULT" 2>/dev/null
                 return
             fi
             /bin/mv -f "$RESULT.progress" "$RESULT" 2>/dev/null
         }
-        cleanup_script() { case "$SCRIPT" in /*) /bin/rm -f "$SCRIPT";; esac; }
-        relaunch() {
-            if [ -n "$ASUSER" ] && [ "$(/usr/bin/id -u)" = "0" ]; then
-                /bin/launchctl asuser "$ASUSER" /usr/bin/open "$1" && return
+        rename_leaf() { /usr/bin/perl -e \(rename) "$1" "$2"; }
+        cleanup() {
+            if [ -n "$MNT" ]; then
+                /usr/bin/hdiutil detach "$MNT" -quiet 2>/dev/null \
+                    || /usr/bin/hdiutil detach "$MNT" -force -quiet 2>/dev/null || true
             fi
-            /usr/bin/open "$1"
-        }
-        while kill -0 "$PID" 2>/dev/null; do sleep 0.3; done
-        note fail-dmg-verify
-        if [ -z "$CURRENT_TEAM_ID" ]; then
-            /bin/rm -f "$DMG"
+            # If rollback could not complete, preserve the previous app for recovery.
+            if [ -n "$WORK" ] && [ ! -e "$BACKUP" ] && [ ! -L "$BACKUP" ]; then
+                /bin/rm -rf "$WORK"
+            fi
+            if running_as_root; then
+                /usr/bin/sudo -n -u "#$ASUSER" /bin/rm -f "$DMG" 2>/dev/null
+            else
+                /bin/rm -f "$DMG"
+                case "$SCRIPT" in /*) /bin/rm -f "$SCRIPT";; esac
+            fi
             finalize
-            relaunch "$APP"
-            cleanup_script
-            exit 1
-        fi
-        DMG_VERIFY_REQ="anchor apple generic and certificate leaf[subject.OU] = \"$CURRENT_TEAM_ID\""
-        if ! /usr/bin/codesign -v --strict -R="$DMG_VERIFY_REQ" "$DMG" 2>/dev/null; then
-            /bin/rm -f "$DMG"
-            finalize
-            relaunch "$APP"
-            cleanup_script
-            exit 1
-        fi
-        note fail-tempdir
-        MNT="$(/usr/bin/mktemp -d)" || { /bin/rm -f "$DMG"; finalize; relaunch "$APP"; cleanup_script; exit 1; }
-        note fail-mount
-        if ! /usr/bin/hdiutil attach "$DMG" -nobrowse -quiet -mountpoint "$MNT"; then
-            /bin/rmdir "$MNT" 2>/dev/null
-            /bin/rm -f "$DMG"
-            finalize
-            relaunch "$APP"
-            cleanup_script
-            exit 1
-        fi
-        SRC="$(/usr/bin/find "$MNT" -maxdepth 1 -name '*.app' -print -quit)"
-        LAUNCH="$APP"
-        if [ -z "$SRC" ]; then
-            note fail-no-app-in-dmg
-        else
-            # Install under the name the DMG ships, in the same folder. A rebrand
-            # changes the bundle filename, so this renames it on disk too; a plain
-            # update keeps the same name and replaces it in place.
-            DEST="$(/usr/bin/dirname "$APP")/$(/usr/bin/basename "$SRC")"
-            # Stage the full copy FIRST; the old app is only removed after the
-            # copy completed, so a failure mid-copy never leaves the user with no
-            # app at all.
-            STAGE="$DEST.update-new"
-            /bin/rm -rf "$STAGE"
-            note fail-copy
-            if /usr/bin/ditto "$SRC" "$STAGE"; then
-                # Clear ALL xattrs (quarantine + FinderInfo the DMG round-trip
-                # adds): FinderInfo breaks strict signature verification.
-                /usr/bin/xattr -cr "$STAGE" 2>/dev/null
-                note fail-version
-                BUNDLE_VERSION="$(/usr/libexec/PlistBuddy -c 'Print CFBundleShortVersionString' "$STAGE/Contents/Info.plist" 2>/dev/null)"
-                if [ "$BUNDLE_VERSION" = "$EXPECTED_VERSION" ]; then
-                    # When the user disabled Gatekeeper, spctl cannot assess anything
-                    # and rejects even a healthy bundle; the codesign identity check
-                    # below stays as the gate in that case.
-                    GATEKEEPER_OK=0
-                    if /usr/sbin/spctl --status 2>/dev/null | /usr/bin/grep -q disabled; then
-                        GATEKEEPER_OK=1
-                    elif /usr/sbin/spctl -a -t exec "$STAGE" >/dev/null 2>&1; then
-                        GATEKEEPER_OK=1
-                    fi
-                    VERIFY_REQ="identifier \"com.celikugurdev.menubench\" and anchor apple generic and certificate leaf[subject.OU] = \"$CURRENT_TEAM_ID\""
-                    note fail-verify
-                    if /usr/bin/codesign -v --deep --strict -R="$VERIFY_REQ" "$STAGE" 2>/dev/null \
-                        && [ "$GATEKEEPER_OK" = 1 ]; then
-                        note fail-swap
-                        # The backup name is unique per run: after an elevated
-                        # install the old bundle is root-owned, a later user-run
-                        # cannot delete that backup, and reusing a fixed name
-                        # would make the NEXT swap fail on it. Strays from
-                        # earlier runs are swept best-effort (an elevated run
-                        # clears even the root-owned ones).
-                        BACKUP="$DEST.update-old.$PID"
-                        /bin/rm -rf "$DEST".update-old "$DEST".update-old.* 2>/dev/null
-                        if { [ ! -d "$DEST" ] || /bin/mv "$DEST" "$BACKUP"; } \
-                            && /bin/mv "$STAGE" "$DEST"; then
-                            LAUNCH="$DEST"
-                            note ok
-                            # Installed as root: hand the bundle to the user, or
-                            # the next user-path update cannot replace it.
-                            if [ "$(/usr/bin/id -u)" = "0" ] && [ -n "$ASUSER" ]; then
-                                /usr/sbin/chown -R "$ASUSER" "$DEST" 2>/dev/null
-                            fi
-                            /bin/rm -rf "$BACKUP"
-                            # If the bundle was renamed, remove the old-named one.
-                            # This happens only after the new bundle is in place.
-                            [ "$DEST" != "$APP" ] && /bin/rm -rf "$APP"
-                        else
-                            [ -d "$BACKUP" ] && [ ! -d "$DEST" ] && /bin/mv "$BACKUP" "$DEST"
-                        fi
-                    fi
+            if [ "$RELAUNCH" = 1 ] && ! kill -0 "$PID" 2>/dev/null \
+                && /usr/bin/codesign -v --deep --strict -R="$VERIFY_REQ" "$LAUNCH" 2>/dev/null; then
+                if running_as_root; then
+                    /bin/launchctl asuser "$ASUSER" /usr/bin/sudo -n -u "#$ASUSER" /usr/bin/open "$LAUNCH"
+                else
+                    /usr/bin/open "$LAUNCH"
                 fi
             fi
-            /bin/rm -rf "$STAGE"
+        }
+        trap cleanup EXIT
+        trap 'exit 1' HUP INT TERM
+        fail() { note "$1"; exit 1; }
+        # Elevated writes are allowed only below the system-controlled
+        # /Applications parent, never inside a user-selected directory chain.
+        if running_as_root; then
+            [ "$APP" = "/Applications/Menubench.app" ] && [ ! -L /Applications ] \
+                || fail fail-install-location
+            WORK="$(/usr/bin/mktemp -d /private/var/root/menubench-update.XXXXXXXX)" \
+                || fail fail-tempdir
+        else
+            APP_DIR="$(/usr/bin/dirname "$APP")"
+            WORK="$(/usr/bin/mktemp -d "$APP_DIR/.menubench-update.XXXXXXXX")" \
+                || fail fail-tempdir
         fi
-        /usr/bin/hdiutil detach "$MNT" -quiet 2>/dev/null \
-            || /usr/bin/hdiutil detach "$MNT" -force -quiet 2>/dev/null \
-            || true
-        /bin/rmdir "$MNT" 2>/dev/null
-        /bin/rm -f "$DMG"
-        finalize
-        relaunch "$LAUNCH"
-        cleanup_script
+        BACKUP="$WORK/previous.app"
+        CAPTURED_DMG="$WORK/release.dmg"
+        STAGE="$WORK/Menubench.app"
+        MNT="$WORK/mount"
+        /bin/mkdir "$MNT" || fail fail-tempdir
+        VERIFY_REQ="identifier \\"com.celikugurdev.menubench\\" and anchor apple generic and certificate leaf[subject.OU] = \\"$EXPECTED_TEAM\\""
+        DMG_VERIFY_REQ="anchor apple generic and certificate leaf[subject.OU] = \\"$EXPECTED_TEAM\\""
+        # The running app's signer is passed in memory, never re-learned from
+        # replaceable on-disk metadata while the authorization prompt is visible.
+        [ -d "$APP" ] && [ ! -L "$APP" ] || fail fail-verify
+        /usr/bin/codesign -v --deep --strict -R="$VERIFY_REQ" "$APP" 2>/dev/null \
+            || fail fail-verify
+        RELAUNCH=1
+        note fail-copy
+        /usr/bin/perl -e \(copy) "$DMG" "$CAPTURED_DMG" \(downloadCeilingBytes) \
+            || fail fail-copy
+        note fail-dmg-verify
+        /usr/bin/codesign -v --strict -R="$DMG_VERIFY_REQ" "$CAPTURED_DMG" 2>/dev/null \
+            || fail fail-dmg-verify
+        note fail-mount
+        /usr/bin/hdiutil attach "$CAPTURED_DMG" -readonly -nobrowse -quiet -mountpoint "$MNT" \
+            || fail fail-mount
+        SRC="$MNT/Menubench.app"
+        [ -d "$SRC" ] && [ ! -L "$SRC" ] || fail fail-no-app-in-dmg
+        /usr/bin/codesign -v --deep --strict -R="$VERIFY_REQ" "$SRC" 2>/dev/null \
+            || fail fail-verify
+        note fail-copy
+        /usr/bin/ditto "$SRC" "$STAGE" || fail fail-copy
+        /usr/bin/xattr -cr "$STAGE" 2>/dev/null
+        note fail-version
+        BUNDLE_VERSION="$(/usr/libexec/PlistBuddy -c 'Print CFBundleShortVersionString' "$STAGE/Contents/Info.plist" 2>/dev/null)"
+        [ "$BUNDLE_VERSION" = "$EXPECTED_VERSION" ] || fail fail-version
+        note fail-verify
+        if ! /usr/sbin/spctl --status 2>/dev/null | /usr/bin/grep -q disabled; then
+            /usr/sbin/spctl -a -t exec "$STAGE" >/dev/null 2>&1 || fail fail-verify
+        fi
+        /usr/bin/codesign -v --deep --strict -R="$VERIFY_REQ" "$STAGE" 2>/dev/null \
+            || fail fail-verify
+        # Change ownership while the bundle is still inside root's private
+        # directory. -P does not traverse symlinks within a signed bundle.
+        if running_as_root; then
+            /usr/sbin/chown -R -P "$ASUSER" "$STAGE" || fail fail-copy
+        fi
+        while kill -0 "$PID" 2>/dev/null; do /bin/sleep 0.3; done
+        note fail-swap
+        rename_leaf "$APP" "$BACKUP" || fail fail-swap
+        # Verify the app actually removed from the destination. A last-moment
+        # replacement must never authorize root to delete an unrelated bundle.
+        if [ -L "$BACKUP" ] \
+            || ! /usr/bin/codesign -v --deep --strict -R="$VERIFY_REQ" "$BACKUP" 2>/dev/null; then
+            rename_leaf "$BACKUP" "$APP" || true
+            fail fail-swap
+        fi
+        if ! rename_leaf "$STAGE" "$APP"; then
+            rename_leaf "$BACKUP" "$APP" || true
+            fail fail-swap
+        fi
+        /bin/rm -rf "$BACKUP"
+        note ok
+        cleanup
+        trap - EXIT
         """
     }
 
@@ -187,9 +214,10 @@ enum UpdateInstallerSupport {
                                        pid: Int32,
                                        resultPath: String,
                                        uid: uid_t,
-                                       expectedVersion: String) -> String {
+                                       expectedVersion: String,
+                                       expectedTeamID: String) -> String {
         let script = shellSingleQuoted(installerScript())
-        let args = [appPath, dmgPath, "\(pid)", resultPath, "\(uid)", expectedVersion]
+        let args = [appPath, dmgPath, "\(pid)", resultPath, "\(uid)", expectedVersion, expectedTeamID]
             .map(shellSingleQuoted)
             .joined(separator: " ")
         return DetachedProcess.detachedShellCommand(

@@ -228,6 +228,7 @@ if (( TEST )); then
         Sources/Menubench/Core/FeatureHubStrings.swift \
         Sources/Menubench/Core/ShortcutSettingsStrings.swift \
         Sources/Menubench/Core/SettingsBackupSupport.swift \
+        Sources/Menubench/Core/SecurityFeatureStrings.swift \
         Sources/Menubench/Core/BackupStrings.swift \
         Sources/Menubench/Core/SnippetStrings.swift \
         Sources/Menubench/Core/BrightnessStrings.swift \
@@ -324,6 +325,7 @@ if (( TEST )); then
         Sources/Menubench/Services/CommandBar/CommandBarUnits.swift \
         Sources/Menubench/Services/CommandBar/CommandBarEmoji.swift \
         Sources/Menubench/Services/CommandBar/CommandBarLinks.swift \
+        Sources/Menubench/Services/CommandBar/CommandBarScriptRunner.swift \
         Sources/Menubench/Services/CommandBar/CommandBarDates.swift \
         Sources/Menubench/Services/CommandBar/CommandBarRowShortcuts.swift \
         Sources/Menubench/Services/CommandBar/CommandBarSystemSettingsSupport.swift \
@@ -377,6 +379,7 @@ if (( TEST )); then
         Sources/Menubench/Services/Cleaner/CleanerSchedule.swift \
         Sources/Menubench/Services/Uninstall/UninstallerSupport.swift \
         Sources/Menubench/Services/ManagedDownloads/WhatsAppDownloadSupport.swift \
+        Tests/SecurityRegressionTests.swift \
         Tests/MetricsTests.swift \
         -o build/metrics-tests
     # `set -e` would end the script on a failing run before the sweep below.
