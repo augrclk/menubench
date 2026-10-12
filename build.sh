@@ -31,13 +31,39 @@ trap 'exit 1' INT TERM HUP
 DEV=0
 INSTALL=0
 TEST=0
+HELP=0
+
+usage() {
+    cat <<'USAGE'
+Usage: ./build.sh [--dev] [--install] [--test] [--help]
+
+  --dev      Build the separate local developer app.
+  --install  Install the built app into /Applications.
+  --test     Run the standalone unit tests, then exit.
+  -h, --help Show this help without building or signing anything.
+
+With no options, build the release app without installing it.
+USAGE
+}
+
 for arg in "$@"; do
     case "$arg" in
         --dev)     DEV=1 ;;
         --install) INSTALL=1 ;;
         --test)    TEST=1 ;;
+        -h|--help) HELP=1 ;;
+        *)
+            print -u2 -r -- "Unknown option: $arg"
+            usage >&2
+            exit 2
+            ;;
     esac
 done
+
+if (( HELP )); then
+    usage
+    exit 0
+fi
 
 if (( DEV )); then
     APP_NAME="Menubench (Developer)"
