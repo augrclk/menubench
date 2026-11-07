@@ -47,6 +47,10 @@ struct SettingsView: View {
         )
     }
 
+    private var currentPageItem: SettingsDirectoryItem? {
+        sidebarSections.lazy.flatMap(\.items).first { $0.page == router.page }
+    }
+
     var body: some View {
         let searchResults = SearchResultsSnapshot(
             query: searchQuery,
@@ -70,9 +74,13 @@ struct SettingsView: View {
             // real space it was actually given for normal layout, and ~zero
             // when asked for an unconstrained ideal size, breaking the chain.
             GeometryReader { geometry in
-                detail
-                    .settingsSectionFocus(for: router.page)
-                    .frame(width: geometry.size.width, height: geometry.size.height, alignment: .top)
+                SettingsPageChrome(page: router.page,
+                                   title: currentPageItem?.title ?? l10n.s.settingsTitle,
+                                   symbol: currentPageItem?.icon ?? "gearshape") {
+                    detail
+                        .settingsSectionFocus(for: router.page)
+                }
+                .frame(width: geometry.size.width, height: geometry.size.height, alignment: .top)
             }
         }
         .navigationSplitViewStyle(.balanced)
@@ -148,7 +156,12 @@ struct SettingsView: View {
                 if !items.isEmpty {
                     Section(section.title) {
                         ForEach(items) { item in
-                            Label(item.title, systemImage: item.icon).tag(item.page)
+                            Label {
+                                Text(item.title)
+                            } icon: {
+                                SettingsSidebarIcon(systemImage: item.icon, hue: item.page.auroraHue)
+                            }
+                            .tag(item.page)
                         }
                     }
                 }
@@ -194,9 +207,13 @@ struct SettingsView: View {
         return Button {
             requestSearchItem(suggestion)
         } label: {
-            Label(group.pageItem.title, systemImage: group.pageItem.icon)
-                .fontWeight(.semibold)
-                .searchResultRowStyle(isSelected: isSelected)
+            Label {
+                Text(group.pageItem.title)
+            } icon: {
+                SettingsSidebarIcon(systemImage: group.pageItem.icon, hue: group.id.auroraHue)
+            }
+            .fontWeight(.semibold)
+            .searchResultRowStyle(isSelected: isSelected)
         }
         .buttonStyle(.plain)
         .accessibilityAddTraits(isSelected ? .isSelected : [])

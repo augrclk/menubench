@@ -34,7 +34,7 @@ enum Theme {
 
     enum Radius {
         static let control: CGFloat = 9
-        static let card: CGFloat = 13
+        static let card: CGFloat = 16
         static let shell: CGFloat = 18
     }
 
@@ -106,8 +106,9 @@ enum PanelSurface {
 
 func sectionTitle(_ text: String) -> some View {
     Text(text)
-        .font(.system(size: 11, weight: .semibold, design: .rounded))
+        .font(Aurora.Font.label)
         .foregroundStyle(.secondary)
+        .textCase(nil)
 }
 
 extension View {
@@ -119,67 +120,17 @@ extension View {
     /// A restrained glass base for the menu panel: still translucent, but with a
     /// stable tint so text and controls do not depend too much on the wallpaper.
     func panelGlassSurface(cornerRadius: CGFloat = 18) -> some View {
-        background(PanelGlassSurface(cornerRadius: cornerRadius))
+        background(AuroraBackdrop(hue: .neutral, cornerRadius: cornerRadius))
     }
 }
 
+/// Every panel section's card is Aurora glass: tinted by the hue of the page
+/// it sits on, lit along its top edge.
 private struct PanelCardModifier: ViewModifier {
-    @Environment(\.colorScheme) private var colorScheme
-
     func body(content: Content) -> some View {
         content
             .padding(Theme.Space.sm)
-            .background(
-                RoundedRectangle(cornerRadius: Theme.Radius.card, style: .continuous)
-                    .fill(PanelSurface.cardFill(for: colorScheme))
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: Theme.Radius.card, style: .continuous)
-                    .strokeBorder(PanelSurface.border(for: colorScheme), lineWidth: 0.7)
-            )
-    }
-}
-
-private struct PanelGlassSurface: View {
-    @Environment(\.colorScheme) private var colorScheme
-    @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
-    @AppStorage(DefaultsKey.liquidGlassEnabled) private var liquidGlassEnabled = false
-    let cornerRadius: CGFloat
-
-    var body: some View {
-#if compiler(>=6.2)
-        if #available(macOS 26.0, *), liquidGlassEnabled, !reduceTransparency {
-            RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                .fill(Color.clear)
-                .glassEffect(.regular, in: RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
-                .overlay(
-                    RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                        .fill(PanelSurface.baseFill(for: colorScheme).opacity(colorScheme == .light ? 0.35 : 0.45))
-                )
-                .overlay(
-                    RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                        .strokeBorder(PanelSurface.border(for: colorScheme), lineWidth: 0.8)
-                )
-        } else {
-            standardSurface
-        }
-#else
-        standardSurface
-#endif
-    }
-
-    @ViewBuilder
-    private var standardSurface: some View {
-        RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-            .fill(.regularMaterial)
-            .overlay(
-                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                    .fill(PanelSurface.baseFill(for: colorScheme))
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                    .strokeBorder(PanelSurface.border(for: colorScheme), lineWidth: 0.8)
-            )
+            .background(AuroraCardSurface())
     }
 }
 

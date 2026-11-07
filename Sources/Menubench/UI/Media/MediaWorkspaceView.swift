@@ -9,7 +9,9 @@ import UniformTypeIdentifiers
 struct MediaSettings: View {
     var body: some View {
         MediaWorkspaceView(compact: false)
-            .padding(16)
+            .padding(.horizontal, 22)
+            .padding(.top, 14)
+            .padding(.bottom, 16)
     }
 }
 
@@ -182,9 +184,19 @@ struct MediaWorkspaceView: View {
     }
 
     private var header: some View {
-        HStack(spacing: 9) {
-            Label(l10n.s.mediaName, systemImage: "photo.on.rectangle.angled")
-                .font(.system(size: compact ? 12 : 16, weight: .semibold))
+        HStack(spacing: compact ? 9 : 12) {
+            if compact {
+                Label(l10n.s.mediaName, systemImage: "photo.on.rectangle.angled")
+                    .font(.system(size: 12, weight: .semibold))
+            } else {
+                // Matches the header every other Settings page gets from
+                // SettingsPageChrome; this page draws its own to keep the
+                // local-only note beside the title.
+                AuroraHueBadge(systemImage: "photo.on.rectangle.angled", hue: SettingsPage.media.auroraHue, size: 34)
+                Text(l10n.s.mediaName)
+                    .font(.system(size: 22, weight: .bold, design: .rounded))
+                    .accessibilityAddTraits(.isHeader)
+            }
             Spacer(minLength: 0)
             Text(l10n.s.mediaLocalNote)
                 .font(.system(size: compact ? 9.5 : 11, weight: .medium))
