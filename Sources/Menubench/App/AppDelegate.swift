@@ -180,6 +180,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate, NSW
                 self.presentUpdateIntros()
             }
         }
+#if MENUBENCH_DEVELOPMENT
+        openAuroraPreviewIfRequested()
+#endif
     }
 
     /// Asking another app about its windows waits for that app to answer, and
@@ -340,6 +343,59 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate, NSW
             }
         }
     }
+
+#if MENUBENCH_DEVELOPMENT
+    /// Developer builds only: `--aurora-panel home|section.<id>|metric.<kind>`
+    /// opens the panel on that page after launch, so a design change can be
+    /// looked at (and captured) without clicking through the menu bar.
+    private func openAuroraPreviewIfRequested() {
+        let arguments = CommandLine.arguments
+        // `--aurora-settings <page>` opens Settings on that page instead.
+        if let index = arguments.firstIndex(of: "--aurora-settings"), index + 1 < arguments.count {
+            let pages: [String: SettingsPage] = [
+                "general": .general, "features": .features, "energy": .energy, "monitor": .monitor,
+                "mouse": .mouse, "media": .media, "clipboard": .clipboard, "shortcuts": .shortcuts,
+                "about": .about, "advanced": .advanced, "windowLayout": .windowLayout,
+            ]
+            let page = pages[arguments[index + 1]] ?? .general
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) { [weak self] in
+                SettingsRouter.shared.page = page
+                self?.openSettingsWindow()
+            }
+            // `--aurora-then <page>` switches page after a moment, the way a
+            // sidebar click does, to check the page transition.
+            if let thenIndex = arguments.firstIndex(of: "--aurora-then"), thenIndex + 1 < arguments.count,
+               let next = pages[arguments[thenIndex + 1]] {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 3.2) { SettingsRouter.shared.page = next }
+            }
+            return
+        }
+        guard let index = arguments.firstIndex(of: "--aurora-panel"), index + 1 < arguments.count else { return }
+        let value = arguments[index + 1]
+        let route: PanelRoute
+        if value.hasPrefix("section."), let id = PanelSectionID(rawValue: String(value.dropFirst(8))) {
+            route = .section(id)
+        } else if value.hasPrefix("metric."), let kind = MetricDetailKind(rawValue: String(value.dropFirst(7))) {
+            route = .metric(kind)
+        } else {
+            route = .home
+        }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) { [weak self] in
+            guard let self else { return }
+            if arguments.contains("--aurora-awake") { KeepAwakeManager.shared.activate(minutes: 0) }
+            if !self.popover.isShown { self.toggleMainPopover() }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { PanelRouter.shared.jump(to: route) }
+            // `--aurora-then section.<id>` then plays the real tile-to-page
+            // transition, for checking the motion frame by frame.
+            if let thenIndex = arguments.firstIndex(of: "--aurora-then"), thenIndex + 1 < arguments.count,
+               let id = PanelSectionID(rawValue: String(arguments[thenIndex + 1].dropFirst(8))) {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) {
+                    PanelRouter.shared.open(.section(id), from: UnitPoint(x: 0.25, y: 0.2))
+                }
+            }
+        }
+    }
+#endif
 
     // MARK: - Main panel
 
@@ -925,7 +981,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate, NSW
 
     private func handlePopoverKeyDown(_ event: NSEvent) -> NSEvent? {
         if popover.isShown, event.keyCode == UInt16(kVK_Escape) {
-            closePopover()
+            // A detail page steps back to the home grid first; Escape on the
+            // grid closes the panel as before.
+            if !PanelRouter.shared.goHome() {
+                closePopover()
+            }
             return nil
         }
 

@@ -169,15 +169,15 @@ struct FeatureHubSettings: View {
         Section {
             HStack(alignment: .top, spacing: 8) {
                 ForEach(FeaturePreset.allCases) { preset in
-                    PresetCard(preset: preset,
+                    AuroraPresetCard(preset: preset,
                                name: presetName(preset),
                                caption: presetDescription(preset),
-                               applyTitle: hub.presetApplyButton) {
+                                     applyTitle: hub.presetApplyButton) {
                         confirmingPreset = preset
                     }
                 }
             }
-            .padding(.vertical, 2)
+            .padding(.vertical, 4)
         } header: {
             Text(hub.presetsTitle)
         } footer: {
@@ -225,7 +225,13 @@ struct FeatureHubSettings: View {
                         .foregroundStyle(.secondary)
                 }
             } header: {
-                Text(groupTitle(group))
+                HStack(spacing: 7) {
+                    Circle()
+                        .fill(group.auroraHue.gradient)
+                        .frame(width: 8, height: 8)
+                        .shadow(color: group.auroraHue.primary.opacity(0.5), radius: 3)
+                    Text(groupTitle(group))
+                }
             }
         }
         Section {
@@ -248,52 +254,14 @@ struct FeatureHubSettings: View {
     }
 }
 
-// MARK: - Preset card
-
-private struct PresetCard: View {
-    let preset: FeaturePreset
-    let name: String
-    let caption: String
-    let applyTitle: String
-    let onApply: () -> Void
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            HStack(spacing: 6) {
-                Image(systemName: preset.symbolName)
-                    .font(.system(size: 12, weight: .semibold))
-                    .foregroundStyle(Color.accentColor)
-                Text(name)
-                    .font(.system(size: 12, weight: .semibold))
-                    .lineLimit(1)
-            }
-            Text(caption)
-                .font(.caption2)
-                .foregroundStyle(.secondary)
-                .fixedSize(horizontal: false, vertical: true)
-                .frame(maxWidth: .infinity, alignment: .leading)
-            Spacer(minLength: 0)
-            Button(applyTitle, action: onApply)
-                .buttonStyle(.bordered)
-                .controlSize(.small)
-        }
-        .padding(9)
-        .frame(maxWidth: .infinity, minHeight: 96, alignment: .topLeading)
-        .background(
-            RoundedRectangle(cornerRadius: 8, style: .continuous)
-                .fill(Color.secondary.opacity(0.08))
-        )
-        .accessibilityElement(children: .combine)
-        .accessibilityLabel("\(name). \(caption)")
-    }
-}
-
 // MARK: - Feature row
 
 private struct FeatureHubRow: View {
     @ObservedObject private var l10n = L10n.shared
     @ObservedObject private var features = FeatureRuntime.shared
     @State private var working = false
+    @State private var popped = false
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     let feature: AppFeature
     let hub: FeatureHubStrings
     let symbolName: String
@@ -341,31 +309,32 @@ private struct FeatureHubRow: View {
                     .opacity(unsupportedReason == nil ? 1 : 0.4)
                     .saturation(unsupportedReason == nil ? 1 : 0)
             }
-            if working {
-                ProgressView()
-                    .controlSize(.small)
-            } else if installed {
-                Button(hub.uninstallButton) { flip(to: false) }
-                    .buttonStyle(.bordered)
-                    .controlSize(.small)
-                    .accessibilityLabel("\(hub.uninstallButton) \(accessibilityTitle)")
-            } else if let reason = unsupportedReason {
+            if !installed, let reason = unsupportedReason {
                 // .help() never fires on a disabled control, so the tooltip
                 // has to sit on this wrapper. Flattening it loses the only
                 // place the reason is shown.
                 HStack(spacing: 0) {
-                    Button(hub.installButton) { flip(to: true) }
-                        .buttonStyle(.bordered)
+                    Toggle("", isOn: .constant(false))
+                        .toggleStyle(.switch)
                         .controlSize(.small)
+                        .labelsHidden()
                         .disabled(true)
                         .accessibilityLabel("\(hub.installButton) \(accessibilityTitle). \(reason)")
                 }
                 .help(reason)
             } else {
-                Button(hub.installButton) { flip(to: true) }
-                    .buttonStyle(.borderedProminent)
+                // One switch per feature: on enables it, off disables it. It
+                // moves the moment it is clicked; the feature follows a beat
+                // later, as the row's colour comes up or drains away.
+                Toggle("", isOn: Binding(get: { working ? !installed : installed },
+                                         set: { flip(to: $0) }))
+                    .toggleStyle(.switch)
                     .controlSize(.small)
-                    .accessibilityLabel("\(hub.installButton) \(accessibilityTitle)")
+                    .labelsHidden()
+                    .tint(feature.group.auroraHue.primary.mix(with: .black, by: 0.12))
+                    .help(installed ? hub.uninstallButton : hub.installButton)
+                    .accessibilityLabel(accessibilityTitle)
+                    .accessibilityHint(installed ? hub.uninstallButton : hub.installButton)
             }
         }
         .padding(.vertical, 1)
@@ -378,16 +347,10 @@ private struct FeatureHubRow: View {
 
     private func rowContent(showsChevron: Bool) -> some View {
         HStack(spacing: 10) {
-            RoundedRectangle(cornerRadius: 8, style: .continuous)
-                .fill(installed
-                        ? AnyShapeStyle(Theme.spaceGradient)
-                        : AnyShapeStyle(Color.secondary.opacity(0.22)))
-                .frame(width: 30, height: 30)
-                .overlay(
-                    Image(systemName: symbolName)
-                        .font(.system(size: 13, weight: .semibold))
-                        .foregroundStyle(installed ? AnyShapeStyle(.white) : AnyShapeStyle(.secondary))
-                )
+            AuroraHueBadge(systemImage: symbolName, hue: feature.group.auroraHue, size: 30)
+                .saturation(installed ? 1 : 0)
+                .opacity(installed ? 1 : 0.5)
+                .scaleEffect(popped && !reduceMotion ? 1.14 : 1)
             VStack(alignment: .leading, spacing: 2) {
                 HStack(spacing: 6) {
                     Text(feature.hubTitle(l10n.s, hub: hub))
@@ -427,13 +390,20 @@ private struct FeatureHubRow: View {
     /// A quick, honest beat of feedback: the spinner shows the action landed,
     /// then the row fades to its new state. The flip itself is instant.
     private func flip(to install: Bool) {
-        guard !working else { return }
+        guard !working, install != installed else { return }
         working = true
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.45) {
-            withAnimation(.easeOut(duration: 0.22)) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+            withAnimation(.easeOut(duration: 0.28)) {
                 FeatureRuntime.shared.setAvailable(feature, install)
             }
             working = false
+            // Turning a feature on gives its badge a small spring, so the
+            // colour arriving reads as the feature arriving.
+            guard install, !reduceMotion else { return }
+            withAnimation(Aurora.Motion.bouncy) { popped = true }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.22) {
+                withAnimation(Aurora.Motion.bouncy) { popped = false }
+            }
         }
     }
 }

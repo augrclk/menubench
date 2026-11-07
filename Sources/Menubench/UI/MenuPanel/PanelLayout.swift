@@ -224,9 +224,20 @@ struct PanelSection<Content: View>: View {
         _collapsed = State(initialValue: PanelLayout.isCollapsed(id))
     }
 
+    @Environment(\.panelSectionTitleHidden) private var titleHidden
+
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            header
+            // On a detail page the page header already names the section;
+            // only the section's own edit controls stay, trailing.
+            if !titleHidden {
+                header
+            } else if supportsEditing {
+                HStack(spacing: 6) {
+                    Spacer(minLength: 0)
+                    editControls
+                }
+            }
 
             if !collapsible || !collapsed {
                 content(isEditing)
@@ -251,18 +262,23 @@ struct PanelSection<Content: View>: View {
                 Spacer(minLength: 0)
             }
             if supportsEditing {
-                if isEditing, let resetAction {
-                    resetButton(resetAction)
-                        .opacity(editButtonVisible ? 1 : 0)
-                        .disabled(!editButtonVisible)
-                        .accessibilityHidden(!editButtonVisible)
-                }
-                editButton
-                    .opacity(editButtonVisible ? 1 : 0)
-                    .disabled(!editButtonVisible)
-                    .accessibilityHidden(!editButtonVisible)
+                editControls
             }
         }
+    }
+
+    @ViewBuilder
+    private var editControls: some View {
+        if isEditing, let resetAction {
+            resetButton(resetAction)
+                .opacity(editButtonVisible ? 1 : 0)
+                .disabled(!editButtonVisible)
+                .accessibilityHidden(!editButtonVisible)
+        }
+        editButton
+            .opacity(editButtonVisible ? 1 : 0)
+            .disabled(!editButtonVisible)
+            .accessibilityHidden(!editButtonVisible)
     }
 
     private var collapseIcon: some View {
