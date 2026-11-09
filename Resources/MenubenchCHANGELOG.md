@@ -1,5 +1,20 @@
 # Menubench Changelog
 
+## [1.0.3] - 2026-11-09
+
+### Highlights
+
+- Redesigned the menu panel and Settings around the new Aurora design system: tinted glass with a slowly drifting light in the colour of each area.
+- Rebuilt the panel home as a bento grid of live tiles for Keep Awake, CPU, memory, power, network, disk, fan, brightness, volume and quick tools, with rings, sparklines and rolling numbers.
+- Opening a tile zooms into its full section; Back, Escape or ⌘[ returns to the home grid.
+- Gave each Settings page its area's colour, a page header and a short transition, added coloured sidebar icons and turned feature presets into cards.
+
+### Improvements
+
+- Added spring-based hover, press and entrance motion that follows Reduce Motion, with opaque surfaces under Reduce Transparency.
+- Resized the panel smoothly between the home grid and detail views without clipping its header.
+- `build.sh --help` now prints usage without building, and unknown options are rejected before compilation.
+
 ## [1.0.2] - 2026-10-03
 
 ### Fixed
