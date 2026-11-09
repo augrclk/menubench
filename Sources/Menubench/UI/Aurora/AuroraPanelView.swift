@@ -437,49 +437,57 @@ struct MenuPanelView: View {
         return tiles
     }
 
+    // The action is named `openTile`, not `open`: a local `open` that calls
+    // the `open(_:)` method it shadows fails to type-check under Swift
+    // 6.0–6.2 inside a view builder (with no diagnostic). Newer compilers
+    // accept it, which is how it once slipped past a local build.
     @ViewBuilder
     private func tileView(_ tile: HomeTile) -> some View {
-        let open = { open(tile) }
+        let openTile: () -> Void = { self.open(tile) }
         switch tile {
-        case .keepAwake: KeepAwakeTile(openDetail: open)
-        case .cpu: CPUTile(open: open)
-        case .memory: MemoryTile(open: open)
-        case .power: PowerTile(open: open)
-        case .network: NetworkTile(open: open)
-        case .disk: DiskTile(open: open)
-        case .fan: FanTile(open: open)
-        case .volume: VolumeTile(openMixer: open)
+        case .keepAwake: KeepAwakeTile(openDetail: openTile)
+        case .cpu: CPUTile(open: openTile)
+        case .memory: MemoryTile(open: openTile)
+        case .power: PowerTile(open: openTile)
+        case .network: NetworkTile(open: openTile)
+        case .disk: DiskTile(open: openTile)
+        case .fan: FanTile(open: openTile)
+        case .volume: VolumeTile(openMixer: openTile)
         case .mixer:
             ShortcutTile(title: l10n.s.mixerSection, caption: nil, symbol: "slider.horizontal.3",
-                         hue: .sound, action: open)
+                         hue: .sound, action: openTile)
         case .brightness:
             ShortcutTile(title: PanelSectionID.brightness.title(l10n.s), caption: nil, symbol: "sun.max.fill",
-                         hue: .brightness, action: open)
+                         hue: .brightness, action: openTile)
         case .controls:
             ShortcutTile(title: PanelSectionID.controls.title(l10n.s), caption: nil, symbol: "switch.2",
-                         hue: .controls, action: open)
+                         hue: .controls, action: openTile)
         case .toggles:
             ShortcutTile(title: PanelSectionID.toggles.title(l10n.s), caption: nil, symbol: "togglepower",
-                         hue: .toggles, action: open)
+                         hue: .toggles, action: openTile)
         case .allTools:
             QuickToolTile(title: AuroraStrings.allTools(l10n.language), symbol: "square.grid.3x3.fill",
-                          hue: .tools, action: open)
+                          hue: .tools, action: openTile)
         case .tool(let item):
-            let recording = recorder.isRecording
-            QuickToolTile(title: item.quickTitle(l10n, recording: recording),
-                          symbol: item.quickSymbol(recording: recording),
-                          active: item == .screenRecorder && recording) {
-                if item.needsScreenRecording && !permissions.screenRecording {
-                    open()
-                } else {
-                    item.runQuickAction()
-                }
-            }
+            QuickToolTile(title: item.quickTitle(l10n, recording: recorder.isRecording),
+                          symbol: item.quickSymbol(recording: recorder.isRecording),
+                          active: item == .screenRecorder && recorder.isRecording,
+                          action: { runTool(item, tile: tile) })
         }
     }
 
     private func open(_ tile: HomeTile) {
         router.open(tile.destination, from: anchor(for: tile))
+    }
+
+    /// A quick tool runs in place, unless it records the screen and that
+    /// permission is missing: then its page opens to ask for it.
+    private func runTool(_ item: UtilityPanelItem, tile: HomeTile) {
+        if item.needsScreenRecording && !permissions.screenRecording {
+            open(tile)
+        } else {
+            item.runQuickAction()
+        }
     }
 
     private func anchor(for tile: HomeTile) -> UnitPoint {
